@@ -36,6 +36,35 @@ const ChatbotPanel = ({ onMinimize }: { onMinimize: () => void }) => {
     scrollToBottom()
   }, [messages])
 
+  // Restore saved chat session
+  useEffect(() => {
+    const savedMessages = localStorage.getItem("assistantMessages")
+    const savedInput = localStorage.getItem("assistantInputValue")
+    const savedQuestionIndex = localStorage.getItem("assistantCurrentQuestionIndex")
+    const savedAnswers = localStorage.getItem("assistantAnswers")
+
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages))
+    }
+    if (savedInput) {
+      setInputValue(savedInput)
+    }
+    if (savedQuestionIndex) {
+      setCurrentQuestionIndex(Number(savedQuestionIndex))
+    }
+    if (savedAnswers) {
+      setAnswers(JSON.parse(savedAnswers))
+    }
+  }, [])
+
+  // Save progress to localStorage
+  useEffect(() => {
+    localStorage.setItem("assistantMessages", JSON.stringify(messages))
+    localStorage.setItem("assistantInputValue", inputValue)
+    localStorage.setItem("assistantCurrentQuestionIndex", currentQuestionIndex.toString())
+    localStorage.setItem("assistantAnswers", JSON.stringify(answers))
+  }, [messages, inputValue, currentQuestionIndex, answers])
+
   const handleUserInput = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -52,9 +81,7 @@ const ChatbotPanel = ({ onMinimize }: { onMinimize: () => void }) => {
     }
 
     setMessages(newMessages)
-
     setAnswers((prevAnswers) => [...prevAnswers, inputValue.trim()])
-
     setCurrentQuestionIndex(nextQuestionIndex)
     setInputValue("")
   }
@@ -76,12 +103,30 @@ const ChatbotPanel = ({ onMinimize }: { onMinimize: () => void }) => {
         body: JSON.stringify(payload),
       })
 
-      setResult("Submission successful!") // need to replace with actual result
+      setResult("Submission successful!") // Replace with actual result handling
     } catch (error) {
       console.error(error)
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleStartOver = () => {
+    setMessages([
+      {
+        sender: "bot",
+        text: "Welcome! This part of the application is where applicants often struggle the most. Completing this section accurately can help your application be processed faster, which could help you get housing sooner! Let's get started.",
+      },
+      { sender: "bot", text: questions[0] },
+    ])
+    setCurrentQuestionIndex(0)
+    setInputValue("")
+    setAnswers([])
+    setResult(null)
+    localStorage.removeItem("assistantMessages")
+    localStorage.removeItem("assistantInputValue")
+    localStorage.removeItem("assistantCurrentQuestionIndex")
+    localStorage.removeItem("assistantAnswers")
   }
 
   return (
@@ -132,6 +177,18 @@ const ChatbotPanel = ({ onMinimize }: { onMinimize: () => void }) => {
           </div>
         )
       )}
+
+      {/* Start Over Button (always visible) */}
+      <div className={styles.submitContainer}>
+        <button
+          type="button"
+          onClick={handleStartOver}
+          className={styles.sendButton}
+          style={{ marginTop: "0.5rem" }}
+        >
+          Start Over
+        </button>
+      </div>
 
       {/* Result */}
       {result && (

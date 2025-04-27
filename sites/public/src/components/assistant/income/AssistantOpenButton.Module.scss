@@ -1,0 +1,16 @@
+.openButton {
+  margin-left: var(--seeds-s2);
+  padding: var(--seeds-s2);
+  background-color: var(--seeds-color-primary);
+  color: var(--seeds-color-white);
+  border: none;
+  border-radius: var(--seeds-rounded-md);
+  font-size: var(--seeds-font-size-base);
+  font-weight: var(--seeds-font-weight-semibold);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.openButton:hover {
+  background-color: var(--seeds-color-primary-dark);
+}

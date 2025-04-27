@@ -103,3 +103,31 @@
   --common-message-max-width: auto;
   --common-message-padding: var(--seeds-s4) var(--card-content-padding-inline);
 }
+
+.heading-with-assistant {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.assistant-reopen-button {
+  position: fixed;
+  bottom: var(--seeds-s4);
+  right: var(--seeds-s4);
+  background-color: var(--seeds-color-primary);
+  color: var(--seeds-color-white);
+  padding: var(--seeds-s2) var(--seeds-s4);
+  border-radius: var(--seeds-rounded-lg);
+  box-shadow: var(--seeds-shadow-lg);
+  cursor: pointer;
+  z-index: 50;
+  font-weight: var(--seeds-font-weight-semibold);
+  font-size: var(--seeds-type-scale-md);
+  transition: background-color 0.3s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.assistant-reopen-button:hover {
+  background-color: var(--seeds-color-primary-dark);
+}

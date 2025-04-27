@@ -20,6 +20,8 @@ import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
+import AssistantOpenButton from "../../../components/assistant/income/AssistantOpenButton"
+import ChatbotPanel from "../../../components/assistant/income/ChatbotPanel"
 
 type IncomeError = "low" | "high" | null
 type IncomePeriod = "perMonth" | "perYear"
@@ -52,6 +54,9 @@ function verifyIncome(listing: Listing, income: number, period: IncomePeriod): I
 const ApplicationIncome = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("income")
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = useState(false)
+
   const [incomeError, setIncomeError] = useState<IncomeError>(null)
   const currentPageSection = listingSectionQuestions(
     listing,
@@ -115,99 +120,134 @@ const ApplicationIncome = () => {
   }, [profile])
 
   return (
-    <FormsLayout>
-      <Form onSubmit={handleSubmit(onSubmit, onError)}>
-        <ApplicationFormLayout
-          listingName={listing?.name}
-          heading={t("application.financial.income.title")}
-          subheading={
-            <div>
-              <p className="field-note mb-4">{t("application.financial.income.instruction1")}</p>
-              <p className="field-note">{t("application.financial.income.instruction2")}</p>
-            </div>
-          }
-          progressNavProps={{
-            currentPageSection: currentPageSection,
-            completedSections: application.completedSections,
-            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-            mounted: OnClientSide(),
+    <>
+      {isChatbotOpen && (
+        <ChatbotPanel
+          onMinimize={() => {
+            setIsChatbotOpen(false)
+            setIsChatbotMinimized(true)
           }}
-          backLink={{
-            url: conductor.determinePreviousUrl(),
+        />
+      )}
+
+      {isChatbotMinimized && (
+        <button
+          type="button"
+          className={styles["assistant-reopen-button"]}
+          onClick={() => {
+            setIsChatbotOpen(true)
+            setIsChatbotMinimized(false)
           }}
-          conductor={conductor}
         >
-          {Object.entries(errors).length > 0 && (
-            <Alert
-              className={styles["message-inside-card"]}
-              variant="alert"
-              fullwidth
-              id={"application-alert-box"}
-            >
-              {t("errors.errorsToResolve")}
-            </Alert>
-          )}
-
-          {incomeError && (
-            <CardSection>
-              <AlertBox type="alert" inverted onClose={() => setIncomeError(null)}>
-                {t("application.household.dontQualifyHeader")}
-              </AlertBox>
-              <AlertNotice
-                title={t(`application.financial.income.validationError.reason.${incomeError}`)}
-                type="alert"
-                inverted
+          💬 Assistant Help - Click to Reopen
+        </button>
+      )}
+      <FormsLayout>
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+          <ApplicationFormLayout
+            listingName={listing?.name}
+            heading={
+              <div className={styles["heading-with-assistant"]}>
+                <h1 className="text-lg font-semibold">{t("application.financial.income.title")}</h1>
+                {!isChatbotOpen && !isChatbotMinimized && (
+                  <AssistantOpenButton
+                    onClick={() => {
+                      setIsChatbotOpen(true)
+                      setIsChatbotMinimized(false)
+                    }}
+                  />
+                )}
+              </div>
+            }
+            subheading={
+              <div>
+                <p className="field-note mb-4">{t("application.financial.income.instruction1")}</p>
+                <p className="field-note">{t("application.financial.income.instruction2")}</p>
+              </div>
+            }
+            progressNavProps={{
+              currentPageSection: currentPageSection,
+              completedSections: application.completedSections,
+              labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+              mounted: OnClientSide(),
+            }}
+            backLink={{
+              url: conductor.determinePreviousUrl(),
+            }}
+            conductor={conductor}
+          >
+            {Object.entries(errors).length > 0 && (
+              <Alert
+                className={styles["message-inside-card"]}
+                variant="alert"
+                fullwidth
+                id={"application-alert-box"}
               >
-                <p className="mb-2">
-                  {t(`application.financial.income.validationError.instruction1`)}
-                </p>
-                <p className="mb-2">
-                  {t(`application.financial.income.validationError.instruction2`)}
-                </p>
-                <p>
-                  <Link href={`/get-assistance`}>{t("pageTitle.getAssistance")}</Link>
-                </p>
-              </AlertNotice>
-            </CardSection>
-          )}
+                {t("errors.errorsToResolve")}
+              </Alert>
+            )}
 
-          <CardSection divider={"flush"} className={"border-none"}>
-            <Field
-              id="income"
-              name="income"
-              type="currency"
-              label={t("application.financial.income.prompt")}
-              labelClassName={"text__caps-spaced"}
-              validation={{ required: true, min: 0.01 }}
-              error={errors.income}
-              register={register}
-              errorMessage={t("errors.numberError")}
-              setValue={setValue}
-              getValues={getValues}
-              prepend={"$"}
-              dataTestId={"app-income"}
-              subNote={t("application.financial.income.placeholder")}
-            />
+            {incomeError && (
+              <CardSection>
+                <AlertBox type="alert" inverted onClose={() => setIncomeError(null)}>
+                  {t("application.household.dontQualifyHeader")}
+                </AlertBox>
+                <AlertNotice
+                  title={t(`application.financial.income.validationError.reason.${incomeError}`)}
+                  type="alert"
+                  inverted
+                >
+                  <p className="mb-2">
+                    {t(`application.financial.income.validationError.instruction1`)}
+                  </p>
+                  <p className="mb-2">
+                    {t(`application.financial.income.validationError.instruction2`)}
+                  </p>
+                  <p>
+                    <Link href={`/get-assistance`}>{t("pageTitle.getAssistance")}</Link>
+                  </p>
+                </AlertNotice>
+              </CardSection>
+            )}
 
-            <fieldset>
-              <legend className="sr-only">{t("application.financial.income.legend")}</legend>
-              <FieldGroup
-                type="radio"
-                name="incomePeriod"
-                error={errors.incomePeriod}
-                errorMessage={t("errors.selectOption")}
+            <CardSection divider={"flush"} className={"border-none"}>
+              <Field
+                id="income"
+                name="income"
+                type="currency"
+                label={t("application.financial.income.prompt")}
+                labelClassName={"text__caps-spaced"}
+                validation={{ required: true, min: 0.01 }}
+                error={errors.income}
                 register={register}
-                validation={{ required: true }}
-                fields={incomePeriodValues}
-                dataTestId={"app-income-period"}
-                fieldGroupClassName="grid grid-cols-1"
-                fieldClassName="ml-0"
+                errorMessage={t("errors.numberError")}
+                setValue={setValue}
+                getValues={getValues}
+                prepend={"$"}
+                dataTestId={"app-income"}
+                subNote={t("application.financial.income.placeholder")}
               />
-            </fieldset>
-          </CardSection>
-        </ApplicationFormLayout>
-      </Form>
-    </FormsLayout>
+
+              <fieldset>
+                <legend className="sr-only">{t("application.financial.income.legend")}</legend>
+                <FieldGroup
+                  type="radio"
+                  name="incomePeriod"
+                  error={errors.incomePeriod}
+                  errorMessage={t("errors.selectOption")}
+                  register={register}
+                  validation={{ required: true }}
+                  fields={incomePeriodValues}
+                  dataTestId={"app-income-period"}
+                  fieldGroupClassName="grid grid-cols-1"
+                  fieldClassName="ml-0"
+                />
+              </fieldset>
+            </CardSection>
+          </ApplicationFormLayout>
+        </Form>
+      </FormsLayout>
+    </>
   )
 }
 

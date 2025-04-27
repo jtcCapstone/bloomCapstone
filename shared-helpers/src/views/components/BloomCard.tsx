@@ -15,7 +15,7 @@ interface BloomCardProps {
   iconSymbol?: CustomIconType
   id?: string
   subtitle?: string | React.ReactNode
-  title?: string
+  title?: string | React.ReactNode
   variant?: "form" | "block"
 }
 

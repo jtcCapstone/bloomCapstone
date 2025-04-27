@@ -8,7 +8,7 @@ import styles from "./application-form.module.scss"
 
 interface ApplicationFormLayoutProps {
   listingName: string
-  heading: string
+  heading: string | React.ReactNode
   subheading?: string | React.ReactNode
   children?: React.ReactNode
   progressNavProps: {

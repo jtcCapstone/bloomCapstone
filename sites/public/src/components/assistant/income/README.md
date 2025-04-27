@@ -21,22 +21,27 @@ An AI-powered guided assistant module for Bloom Housing's income verification pr
   - Assistant Logic
   - Security Implementation
 - **Week 4 (May 13-15)**: Polish & Launch
+
   - Testing & QA
   - Documentation
   - Final Integration
 
   ### MVP Road Map
+
   ![MVP Road Map](./project_tracking/screenshots/mvproadmap.png)
 
 ## Architecture
 
 ### Component Architecture
+
 ![Component Architecture Diagram](./project_tracking/screenshots/readmediagram.png)
 
-### Data Sequence 
+### Data Sequence
+
 ![Sequence Diagram](./project_tracking/screenshots/seqdiagramcapstone.png)
 
 ### Data Flow
+
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
 │   User      │     │   Income    │     │   Backend   │
@@ -56,6 +61,7 @@ An AI-powered guided assistant module for Bloom Housing's income verification pr
 ## Project Tracking
 
 Daily progress and project status are tracked in the `project_tracking` folder:
+
 ```
 project_tracking/
 ├── screenshots/          # Daily project board screenshots
@@ -64,6 +70,7 @@ project_tracking/
 ```
 
 To add a new screenshot:
+
 1. Take a screenshot of the project board
 2. Save it in `project_tracking/screenshots/` with the format `YYYY-MM-DD.png`
 3. Update the project status in the README if needed
@@ -105,6 +112,7 @@ income/
 ## Integration
 
 The Income Assistant is integrated into the income page at:
+
 ```
 sites/public/src/pages/applications/financial/income.tsx
 ```
@@ -142,6 +150,7 @@ sites/public/src/pages/applications/financial/income.tsx
 ### Development
 
 Run the development server:
+
 ```bash
 yarn dev:all
 ```
@@ -149,6 +158,7 @@ yarn dev:all
 ### Testing
 
 Run the test suite:
+
 ```bash
 yarn test
 ```
@@ -195,4 +205,4 @@ Please read [CONTRIBUTING.md](../../../../../../CONTRIBUTING.md) for details on 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](../../../../../../LICENSE.md) file for details. 
+This project is licensed under the MIT License - see the [LICENSE.md](../../../../../../LICENSE.md) file for details.

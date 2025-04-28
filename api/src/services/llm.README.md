@@ -115,7 +115,8 @@ console.log(data.response);
 
 ## Visuals
 
-![LLM Data Flow Diagram](../../../sites/public/src/components/assistant/income/project_tracking/screenshots/usertollmdiagram.png)
+![LLM Data Flow Diagram](../../../sites/public/src/components/assistant/income/project_tracking/assets/usertollmdiagram.png)
+
 _Figure: End-to-end data flow and security layers for the LLM feature, from user input to LLM response._
 
 ---

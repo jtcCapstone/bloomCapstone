@@ -1,103 +1,91 @@
 # Income Assistant Tests
 
-This document explains the test requirements for the Income Assistant component.
+This document outlines the current test coverage for the Income Assistant component.
 
-## Test Requirements
+## Current Test Coverage
 
-### 1. Basic Rendering
+### 1. Basic UI Tests
 
-- Component must render when `isOpen` is true
-- Component must not render when `isOpen` is false
-- Component must have proper accessibility attributes:
-  - `data-testid="income-assistant"`
-  - `aria-label="Income Assistant"`
+- ✅ Component renders when `isOpen` is true
+- ✅ Component does not render when `isOpen` is false
+- ✅ Component displays correct title
+- ✅ Component minimizes when close button is clicked
 
-### 2. String Handling
+### 2. Component Props
 
-- Component must accept custom strings via the `strings` prop:
-  ```typescript
+```typescript
+interface IncomeAssistantProps {
+  isOpen: boolean
+  onClose: () => void
+  className?: string
   strings?: {
     title?: string
     close?: string
     error?: string
   }
-  ```
-- When custom strings are provided, they should be used
-- When no custom strings are provided, fall back to translations:
-  - Title: `t("application.income.assistant.title")`
-  - Close button: `t("t.close")`
-
-### 3. User Interactions
-
-- Close button must call the `onClose` prop when clicked
-- Close button text should be either:
-  - Custom string from `strings.close`
-  - Or translation `t("t.close")`
-
-### 4. Error Handling
-
-- Use UI Seeds components for error display:
-  - `ErrorMessage`
-  - `AlertBox`
-  - `AlertNotice`
-- Display errors with proper styling and accessibility
-- Handle errors gracefully
-
-## Implementation Tips
-
-1. Use the UI Seeds components for consistent styling
-2. Ensure all text content is either:
-   - From custom strings prop
-   - Or from translations
-3. Include proper accessibility attributes
-4. Handle the `isOpen` prop to control visibility
-5. Implement the close button with proper click handling
-6. Use proper TypeScript types and imports
-7. Follow Bloom's component structure patterns
-
-## Example Implementation
-
-```typescript
-import React from "react"
-import { t, ErrorMessage, AlertBox, AlertNotice } from "@bloom-housing/ui-components"
-import { Button } from "@bloom-housing/ui-seeds"
-import { IncomeAssistantProps } from "./IncomeAssistant.types"
-import styles from "./IncomeAssistant.module.scss"
-
-const IncomeAssistant = (props: IncomeAssistantProps) => {
-  const { isOpen, onClose, strings, testId, ariaLabel, className, children } = props
-
-  if (!isOpen) return null
-
-  return (
-    <div className={className} data-testid={testId} aria-label={ariaLabel}>
-      <h2 className={styles.title}>{strings?.title ?? t("application.income.assistant.title")}</h2>
-      {children}
-      <Button variant="primary" onClick={onClose} className={styles.closeButton}>
-        {strings?.close ?? t("t.close")}
-      </Button>
-    </div>
-  )
 }
-
-export { IncomeAssistant as default, IncomeAssistant }
 ```
 
-## Key Implementation Notes
+### 3. Test Implementation
 
-1. **UI Seeds Components**: Use components from `@bloom-housing/ui-seeds` for consistent styling
-2. **Styling**:
-   - Use SCSS modules for component-specific styles
-   - Follow UI Seeds design tokens
-3. **TypeScript**:
-   - Import and use proper types
-   - Use proper prop destructuring
-4. **Accessibility**:
-   - Include all required ARIA attributes
-   - Use semantic HTML elements
-5. **Children**:
-   - Support rendering of children components
-   - Use proper TypeScript type for children
-6. **Error Handling**:
-   - Use UI Seeds error components for displaying errors
-   - Handle errors gracefully
+```typescript
+import { render, screen, fireEvent } from "@testing-library/react"
+import IncomeAssistant from "../IncomeAssistant"
+
+describe("<IncomeAssistant />", () => {
+  const defaultProps = {
+    isOpen: true,
+    onClose: jest.fn(),
+  }
+
+  it("renders when open", () => {
+    render(<IncomeAssistant {...defaultProps} />)
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+  })
+
+  it("shows correct title", () => {
+    render(<IncomeAssistant {...defaultProps} />)
+    expect(screen.getByText("Income Assistant")).toBeInTheDocument()
+  })
+
+  it("doesn't render when closed", () => {
+    render(<IncomeAssistant {...defaultProps} isOpen={false} />)
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+  })
+
+  it("calls onClose when minimized", () => {
+    render(<IncomeAssistant {...defaultProps} />)
+    fireEvent.click(screen.getByRole("button", { name: /close/i }))
+    expect(defaultProps.onClose).toHaveBeenCalled()
+  })
+})
+```
+
+## Future Test Expansion
+
+As the component evolves to include chat functionality, additional tests will be added for:
+
+1. Chat Interaction
+
+   - Message sending/receiving
+   - Chat history management
+   - Error handling
+
+2. Income Calculation
+
+   - Input validation
+   - Calculation accuracy
+   - Error states
+
+3. State Management
+   - Context integration
+   - Step progression
+   - Data persistence
+
+## Test Guidelines
+
+1. Use React Testing Library
+2. Focus on user interactions
+3. Test accessibility features
+4. Mock external dependencies
+5. Follow AAA pattern (Arrange, Act, Assert)

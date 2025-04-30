@@ -20,8 +20,8 @@ import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
-import AssistantOpenButton from "../../../components/assistant/income/AssistantOpenButton"
-import ChatbotPanel from "../../../components/assistant/income/ChatbotPanel"
+import AssistantOpenButton from "../../../components/assistant/shared/AssistantOpenButton"
+import { IncomeAssistant } from "../../../components/assistant/income/IncomeAssistant"
 
 type IncomeError = "low" | "high" | null
 type IncomePeriod = "perMonth" | "perYear"
@@ -122,8 +122,9 @@ const ApplicationIncome = () => {
   return (
     <>
       {isChatbotOpen && (
-        <ChatbotPanel
-          onMinimize={() => {
+        <IncomeAssistant
+          isOpen={isChatbotOpen}
+          onClose={() => {
             setIsChatbotOpen(false)
             setIsChatbotMinimized(true)
           }}

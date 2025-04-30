@@ -1,19 +1,15 @@
 import { ReactNode } from "react"
+import { Message } from "../context/AssistantContext"
 
-export interface Message {
+// Question type for the income flow
+export interface IncomeQuestion {
   id: string
-  content: string
-  type: "user" | "assistant"
-  timestamp: Date
+  question: string
+  type: "number" | "currency" | "boolean"
+  validation: (value: string) => boolean
 }
 
-export interface ChatState {
-  messages: Message[]
-  isProcessing: boolean
-  currentStep: number
-  totalSteps: number
-}
-
+// Props for the IncomeAssistant component
 export interface IncomeAssistantProps {
   /** Whether the assistant is currently open */
   isOpen: boolean
@@ -42,4 +38,18 @@ export interface IncomeAssistantProps {
   onSendMessage?: (message: string) => void
   currentStep?: number
   totalSteps?: number
+}
+
+// Income calculation result
+export interface IncomeCalculation {
+  weeklyIncome: number
+  annualIncome: number
+  hourlyRate: number
+  hoursPerWeek: number
+}
+
+// Form data for income calculations
+export interface IncomeFormData {
+  annualIncome: number
+  hoursPerWeek: number
 }

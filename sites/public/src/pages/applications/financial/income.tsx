@@ -22,6 +22,7 @@ import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
 import AssistantOpenButton from "../../../components/assistant/shared/AssistantOpenButton"
 import { IncomeAssistant } from "../../../components/assistant/income/IncomeAssistant"
+import { AssistantProvider } from "../../../components/assistant/context/AssistantContext"
 
 type IncomeError = "low" | "high" | null
 type IncomePeriod = "perMonth" | "perYear"
@@ -122,13 +123,15 @@ const ApplicationIncome = () => {
   return (
     <>
       {isChatbotOpen && (
-        <IncomeAssistant
-          isOpen={isChatbotOpen}
-          onClose={() => {
-            setIsChatbotOpen(false)
-            setIsChatbotMinimized(true)
-          }}
-        />
+        <AssistantProvider totalSteps={4}>
+          <IncomeAssistant
+            isOpen={isChatbotOpen}
+            onClose={() => {
+              setIsChatbotOpen(false)
+              setIsChatbotMinimized(true)
+            }}
+          />
+        </AssistantProvider>
       )}
 
       {isChatbotMinimized && (

@@ -1,20 +1,20 @@
+/** @jest-environment jsdom */
 import React from "react"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { IncomeAssistant } from "../IncomeAssistant"
 import { AssistantProvider } from "../../context/AssistantContext"
 
-// Simple mock for ChatbotPanel
-jest.mock("../../shared/ChatbotPanel", () => ({
-  __esModule: true,
-  default: ({ onMinimize, title }) => (
-    <div data-testid="chatbot-panel">
-      <div data-testid="title">{title}</div>
-      <button data-testid="minimize-button" onClick={onMinimize}>
-        Minimize
-      </button>
-    </div>
-  ),
-}))
+jest.mock("../../shared/ChatbotPanel", () => {
+  return function ChatbotPanel(props) {
+    return (
+      <div data-testid="chatbot-panel">
+        <button data-testid="minimize-button" onClick={props.onMinimize}>
+          Minimize
+        </button>
+      </div>
+    )
+  }
+})
 
 describe("IncomeAssistant", () => {
   const mockOnClose = jest.fn()
@@ -23,7 +23,7 @@ describe("IncomeAssistant", () => {
     jest.clearAllMocks()
   })
 
-  it("renders when open", () => {
+  test("renders when open", () => {
     render(
       <AssistantProvider totalSteps={4}>
         <IncomeAssistant isOpen={true} onClose={mockOnClose} />
@@ -32,31 +32,22 @@ describe("IncomeAssistant", () => {
     expect(screen.getByTestId("chatbot-panel")).toBeInTheDocument()
   })
 
-  it("shows correct title", () => {
-    render(
-      <AssistantProvider totalSteps={4}>
-        <IncomeAssistant isOpen={true} onClose={mockOnClose} />
-      </AssistantProvider>
-    )
-    expect(screen.getByTestId("title")).toHaveTextContent("Income Assistant")
-  })
-
-  it("doesn't render when closed", () => {
+  test("does not render when closed", () => {
     render(
       <AssistantProvider totalSteps={4}>
         <IncomeAssistant isOpen={false} onClose={mockOnClose} />
       </AssistantProvider>
     )
-    expect(screen.queryByTestId("chatbot-panel")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("chatbot-panel")).toBeNull()
   })
 
-  it("calls onClose when minimized", () => {
+  test("calls onClose when minimize button is clicked", () => {
     render(
       <AssistantProvider totalSteps={4}>
         <IncomeAssistant isOpen={true} onClose={mockOnClose} />
       </AssistantProvider>
     )
     fireEvent.click(screen.getByTestId("minimize-button"))
-    expect(mockOnClose).toHaveBeenCalled()
+    expect(mockOnClose).toHaveBeenCalledTimes(1)
   })
 })

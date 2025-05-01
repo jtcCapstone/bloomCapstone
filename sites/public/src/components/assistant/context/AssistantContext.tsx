@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, ReactNode } from "react"
+import React, { createContext, useContext, useReducer, ReactNode, useRef } from "react"
 
 // Types
 export interface Message {
@@ -78,10 +78,11 @@ interface AssistantProviderProps {
 
 export const AssistantProvider: React.FC<AssistantProviderProps> = ({ children, totalSteps }) => {
   const [state, dispatch] = useReducer(assistantReducer, { ...initialState, totalSteps })
+  const messageCounter = useRef(0)
 
   const sendMessage = (content: string, type: "user" | "assistant" = "user") => {
     const message: Message = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${messageCounter.current++}`,
       content,
       type,
       timestamp: new Date(),

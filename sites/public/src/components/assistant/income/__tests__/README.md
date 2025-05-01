@@ -1,91 +1,43 @@
 # Income Assistant Tests
 
-This document outlines the current test coverage for the Income Assistant component.
+This document outlines the test coverage for the Income Assistant component based on the current implementation in IncomeAssistant.test.tsx.
 
-## Current Test Coverage
+## Test Coverage
 
-### 1. Basic UI Tests
+1. **Component Rendering When Open**:
 
-- ✅ Component renders when `isOpen` is true
-- ✅ Component does not render when `isOpen` is false
-- ✅ Component displays correct title
-- ✅ Component minimizes when close button is clicked
+   - The IncomeAssistant component should render when the `isOpen` prop is set to true.
+   - This is verified by checking for an element with `data-testid="chatbot-panel"`.
 
-### 2. Component Props
+2. **Component Non-Rendering When Closed**:
 
-```typescript
-interface IncomeAssistantProps {
-  isOpen: boolean
-  onClose: () => void
-  className?: string
-  strings?: {
-    title?: string
-    close?: string
-    error?: string
-  }
-}
-```
+   - The component should not render when the `isOpen` prop is false.
+   - Verified by confirming that the element with `data-testid="chatbot-panel"` does not exist.
 
-### 3. Test Implementation
+3. **Minimization Functionality**:
+   - When the "Minimize" button (rendered within the ChatbotPanel mock) is clicked, the `onClose` callback should be triggered exactly once.
 
-```typescript
-import { render, screen, fireEvent } from "@testing-library/react"
-import IncomeAssistant from "../IncomeAssistant"
+## Implementation Details
 
-describe("<IncomeAssistant />", () => {
-  const defaultProps = {
-    isOpen: true,
-    onClose: jest.fn(),
-  }
+- The tests are implemented using React Testing Library and Jest.
+- A custom Jest mock for the `ChatbotPanel` is used to simulate a basic UI, rendering a div with a "Minimize" button.
+- Each test wraps the `IncomeAssistant` component inside an `AssistantProvider` to provide the necessary context.
+- Mocks are cleared before each test using `jest.clearAllMocks()`.
 
-  it("renders when open", () => {
-    render(<IncomeAssistant {...defaultProps} />)
-    expect(screen.getByRole("dialog")).toBeInTheDocument()
-  })
+## How to Run These Tests
 
-  it("shows correct title", () => {
-    render(<IncomeAssistant {...defaultProps} />)
-    expect(screen.getByText("Income Assistant")).toBeInTheDocument()
-  })
+You can run these tests in two ways:
 
-  it("doesn't render when closed", () => {
-    render(<IncomeAssistant {...defaultProps} isOpen={false} />)
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
-  })
+- **From the project root:**
 
-  it("calls onClose when minimized", () => {
-    render(<IncomeAssistant {...defaultProps} />)
-    fireEvent.click(screen.getByRole("button", { name: /close/i }))
-    expect(defaultProps.onClose).toHaveBeenCalled()
-  })
-})
-```
+  yarn jest sites/public/src/components/assistant/income/tests
 
-## Future Test Expansion
+- **Using the unit test script from sites/public:**
 
-As the component evolves to include chat functionality, additional tests will be added for:
+  1. Navigate to the sites/public directory:
+     cd sites/public
+  2. Run the unit tests for IncomeAssistant:
 
-1. Chat Interaction
+  yarn test:unit src/components/assistant/income/tests
 
-   - Message sending/receiving
-   - Chat history management
-   - Error handling
-
-2. Income Calculation
-
-   - Input validation
-   - Calculation accuracy
-   - Error states
-
-3. State Management
-   - Context integration
-   - Step progression
-   - Data persistence
-
-## Test Guidelines
-
-1. Use React Testing Library
-2. Focus on user interactions
-3. Test accessibility features
-4. Mock external dependencies
-5. Follow AAA pattern (Arrange, Act, Assert)
+Make sure to use the correct folder path ("tests" directory) that reflects your current directory structure.

@@ -164,10 +164,13 @@ const ApplicationIncome = () => {
               </div>
             }
             subheading={
-              <div>
-                <p className="field-note mb-4">{t("application.financial.income.instruction1")}</p>
-                <p className="field-note">{t("application.financial.income.instruction2")}</p>
-              </div>
+              <>
+                <span className="field-note mb-4">
+                  {t("application.financial.income.instruction1")}
+                </span>
+                <br />
+                <span className="field-note">{t("application.financial.income.instruction2")}</span>
+              </>
             }
             progressNavProps={{
               currentPageSection: currentPageSection,
@@ -201,15 +204,15 @@ const ApplicationIncome = () => {
                   type="alert"
                   inverted
                 >
-                  <p className="mb-2">
+                  <div className="mb-2">
                     {t(`application.financial.income.validationError.instruction1`)}
-                  </p>
-                  <p className="mb-2">
+                  </div>
+                  <div className="mb-2">
                     {t(`application.financial.income.validationError.instruction2`)}
-                  </p>
-                  <p>
+                  </div>
+                  <div>
                     <Link href={`/get-assistance`}>{t("pageTitle.getAssistance")}</Link>
-                  </p>
+                  </div>
                 </AlertNotice>
               </CardSection>
             )}

@@ -70,7 +70,7 @@ const ChatbotPanel: React.FC<ChatbotPanelProps> = ({
 
         {error && <div className={styles.error}>{error}</div>}
 
-        {currentStep < totalSteps ? (
+        {currentStep < totalSteps && (
           <form onSubmit={handleUserInput} className={styles.inputContainer}>
             <input
               type="text"
@@ -88,13 +88,12 @@ const ChatbotPanel: React.FC<ChatbotPanelProps> = ({
               {isProcessing ? "Processing..." : "Send"}
             </button>
           </form>
-        ) : (
-          <div className={styles.submitContainer}>
-            <button onClick={onStartOver} className={styles.submitButton}>
-              Start Over
-            </button>
-          </div>
         )}
+        <div className={styles.submitContainer}>
+          <button onClick={() => onStartOver()} className={styles.submitButton}>
+            Start Over
+          </button>
+        </div>
       </div>
     </ErrorBoundary>
   )

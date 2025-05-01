@@ -1,5 +1,4 @@
-import React, { useEffect, useCallback, useRef } from "react"
-import styles from "./IncomeAssistant.module.scss"
+import React, { useEffect, useCallback } from "react"
 import { IncomeAssistantProps } from "./IncomeAssistant.types"
 import { useAssistant } from "../context/AssistantContext"
 import ChatbotPanel from "../shared/ChatbotPanel"
@@ -61,10 +60,6 @@ export const IncomeAssistant: React.FC<IncomeAssistantProps> = ({
     reset,
   } = useAssistant()
 
-  const lastProcessedMessageId = useRef<string | null>(null)
-  const userMessages = messages.filter((m) => m.type === "user")
-  const lastUserMessage = userMessages[userMessages.length - 1]
-
   // Handle user responses
   const handleUserResponse = useCallback(
     (response: string) => {
@@ -80,9 +75,6 @@ export const IncomeAssistant: React.FC<IncomeAssistantProps> = ({
         // Clear any previous errors
         setError(null)
 
-        // Process the response
-        sendMessage(response, "user")
-
         // Move to next question or finish
         if (currentStep < INCOME_QUESTIONS.length - 1) {
           setStep(currentStep + 1)
@@ -90,6 +82,9 @@ export const IncomeAssistant: React.FC<IncomeAssistantProps> = ({
             sendMessage(INCOME_QUESTIONS[currentStep + 1].question, "assistant")
           }, 0)
         } else {
+          // Final question answered; set step to total to trigger completion
+          setStep(INCOME_QUESTIONS.length)
+
           // Calculate final income
           const answers = messages.filter((m) => m.type === "user").map((m) => m.content)
 
@@ -124,13 +119,6 @@ export const IncomeAssistant: React.FC<IncomeAssistantProps> = ({
     }
   }, [isOpen, messages.length, sendMessage])
 
-  useEffect(() => {
-    if (lastUserMessage && !isProcessing && lastUserMessage.id !== lastProcessedMessageId.current) {
-      lastProcessedMessageId.current = lastUserMessage.id
-      handleUserResponse(lastUserMessage.content)
-    }
-  }, [lastUserMessage, isProcessing, handleUserResponse])
-
   // Reset the conversation
   const handleStartOver = useCallback(() => {
     reset()
@@ -147,8 +135,12 @@ export const IncomeAssistant: React.FC<IncomeAssistantProps> = ({
         onMinimize={onClose}
         messages={messages}
         isProcessing={isProcessing}
-        onSendMessage={handleUserResponse}
-        onStartOver={handleStartOver}
+        onSendMessage={(message: string) => {
+          // Add user's message and then process it
+          sendMessage(message, "user")
+          handleUserResponse(message)
+        }}
+        onStartOver={() => handleStartOver()}
         error={error}
         currentStep={currentStep}
         totalSteps={INCOME_QUESTIONS.length}

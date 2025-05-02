@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode, useRef } from "react"
+import { sendChatMessage } from "../chatService"
 
 // Types
 export interface Message {
@@ -80,7 +81,7 @@ export const AssistantProvider: React.FC<AssistantProviderProps> = ({ children, 
   const [state, dispatch] = useReducer(assistantReducer, { ...initialState, totalSteps })
   const messageCounter = useRef(0)
 
-  const sendMessage = (content: string, type: "user" | "assistant" = "user") => {
+  const sendMessage = async (content: string, type: "user" | "assistant" = "user") => {
     const message: Message = {
       id: `${Date.now()}-${messageCounter.current++}`,
       content,
@@ -88,6 +89,34 @@ export const AssistantProvider: React.FC<AssistantProviderProps> = ({ children, 
       timestamp: new Date(),
     }
     dispatch({ type: "ADD_MESSAGE", payload: message })
+
+    // If the message is from the user, send it to the LLM
+    if (type === 'user'){
+      dispatch({ type:'SET_PROCESSING', payload:true})
+
+      try {
+        // history is the array of messages from the user
+        const history = state.messages.map(msg =>msg.content)
+
+        // send message to llm and wait for response
+        const response = await sendChatMessage(content,history)
+
+        const assistantMessage: Message = {
+          id: `${Date.now()}-${messageCounter.current++}`,
+          content: response,
+          type: 'assistant',
+          timestamp: new Date(),
+        }
+
+        dispatch({ type:'ADD_MESSAGE', payload:assistantMessage})
+        // catch any errors from the LLM
+      } catch (error){
+        console.error("Error getting response from LLM: ", error)
+        dispatch({ type:'SET_ERROR', payload: 'Failed to get response'})
+      } finally {
+        dispatch({ type:'SET_PROCESSING', payload:false})
+      }
+    }
   }
 
   const setStep = (step: number) => {

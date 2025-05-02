@@ -1,103 +1,43 @@
 # Income Assistant Tests
 
-This document explains the test requirements for the Income Assistant component.
+This document outlines the test coverage for the Income Assistant component based on the current implementation in IncomeAssistant.test.tsx.
 
-## Test Requirements
+## Test Coverage
 
-### 1. Basic Rendering
+1. **Component Rendering When Open**:
 
-- Component must render when `isOpen` is true
-- Component must not render when `isOpen` is false
-- Component must have proper accessibility attributes:
-  - `data-testid="income-assistant"`
-  - `aria-label="Income Assistant"`
+   - The IncomeAssistant component should render when the `isOpen` prop is set to true.
+   - This is verified by checking for an element with `data-testid="chatbot-panel"`.
 
-### 2. String Handling
+2. **Component Non-Rendering When Closed**:
 
-- Component must accept custom strings via the `strings` prop:
-  ```typescript
-  strings?: {
-    title?: string
-    close?: string
-    error?: string
-  }
-  ```
-- When custom strings are provided, they should be used
-- When no custom strings are provided, fall back to translations:
-  - Title: `t("application.income.assistant.title")`
-  - Close button: `t("t.close")`
+   - The component should not render when the `isOpen` prop is false.
+   - Verified by confirming that the element with `data-testid="chatbot-panel"` does not exist.
 
-### 3. User Interactions
+3. **Minimization Functionality**:
+   - When the "Minimize" button (rendered within the ChatbotPanel mock) is clicked, the `onClose` callback should be triggered exactly once.
 
-- Close button must call the `onClose` prop when clicked
-- Close button text should be either:
-  - Custom string from `strings.close`
-  - Or translation `t("t.close")`
+## Implementation Details
 
-### 4. Error Handling
+- The tests are implemented using React Testing Library and Jest.
+- A custom Jest mock for the `ChatbotPanel` is used to simulate a basic UI, rendering a div with a "Minimize" button.
+- Each test wraps the `IncomeAssistant` component inside an `AssistantProvider` to provide the necessary context.
+- Mocks are cleared before each test using `jest.clearAllMocks()`.
 
-- Use UI Seeds components for error display:
-  - `ErrorMessage`
-  - `AlertBox`
-  - `AlertNotice`
-- Display errors with proper styling and accessibility
-- Handle errors gracefully
+## How to Run These Tests
 
-## Implementation Tips
+You can run these tests in two ways:
 
-1. Use the UI Seeds components for consistent styling
-2. Ensure all text content is either:
-   - From custom strings prop
-   - Or from translations
-3. Include proper accessibility attributes
-4. Handle the `isOpen` prop to control visibility
-5. Implement the close button with proper click handling
-6. Use proper TypeScript types and imports
-7. Follow Bloom's component structure patterns
+- **From the project root:**
 
-## Example Implementation
+  yarn jest sites/public/src/components/assistant/income/tests
 
-```typescript
-import React from "react"
-import { t, ErrorMessage, AlertBox, AlertNotice } from "@bloom-housing/ui-components"
-import { Button } from "@bloom-housing/ui-seeds"
-import { IncomeAssistantProps } from "./IncomeAssistant.types"
-import styles from "./IncomeAssistant.module.scss"
+- **Using the unit test script from sites/public:**
 
-const IncomeAssistant = (props: IncomeAssistantProps) => {
-  const { isOpen, onClose, strings, testId, ariaLabel, className, children } = props
+  1. Navigate to the sites/public directory:
+     cd sites/public
+  2. Run the unit tests for IncomeAssistant:
 
-  if (!isOpen) return null
+  yarn test:unit src/components/assistant/income/tests
 
-  return (
-    <div className={className} data-testid={testId} aria-label={ariaLabel}>
-      <h2 className={styles.title}>{strings?.title ?? t("application.income.assistant.title")}</h2>
-      {children}
-      <Button variant="primary" onClick={onClose} className={styles.closeButton}>
-        {strings?.close ?? t("t.close")}
-      </Button>
-    </div>
-  )
-}
-
-export { IncomeAssistant as default, IncomeAssistant }
-```
-
-## Key Implementation Notes
-
-1. **UI Seeds Components**: Use components from `@bloom-housing/ui-seeds` for consistent styling
-2. **Styling**:
-   - Use SCSS modules for component-specific styles
-   - Follow UI Seeds design tokens
-3. **TypeScript**:
-   - Import and use proper types
-   - Use proper prop destructuring
-4. **Accessibility**:
-   - Include all required ARIA attributes
-   - Use semantic HTML elements
-5. **Children**:
-   - Support rendering of children components
-   - Use proper TypeScript type for children
-6. **Error Handling**:
-   - Use UI Seeds error components for displaying errors
-   - Handle errors gracefully
+Make sure to use the correct folder path ("tests" directory) that reflects your current directory structure.

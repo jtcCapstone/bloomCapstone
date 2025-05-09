@@ -21,7 +21,7 @@ import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
 import AssistantOpenButton from "../../../components/assistant/shared/AssistantOpenButton"
-import { IncomeAssistant } from "../../../components/assistant/income/IncomeAssistant"
+import { IncomeAssistant } from "../../../components/assistant/apppages/income/IncomeAssistant"
 import { AssistantProvider } from "../../../components/assistant/context/AssistantContext"
 
 type IncomeError = "low" | "high" | null
@@ -69,8 +69,8 @@ const ApplicationIncome = () => {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { register, handleSubmit, errors, getValues, setValue, trigger } = useForm({
     defaultValues: {
-      income: application.income,
-      incomePeriod: application.incomePeriod,
+      income: "",
+      incomePeriod: "",
     },
     shouldFocusError: false,
   })
@@ -120,6 +120,11 @@ const ApplicationIncome = () => {
     })
   }, [profile])
 
+  const handleConfirmEstimate = (estimate: string) => {
+    setValue("income", estimate)
+    console.log("Income form updated with estimate:", estimate)
+  }
+
   return (
     <>
       {isChatbotOpen && (
@@ -130,6 +135,7 @@ const ApplicationIncome = () => {
               setIsChatbotOpen(false)
               setIsChatbotMinimized(true)
             }}
+            onConfirm={handleConfirmEstimate}
           />
         </AssistantProvider>
       )}
@@ -225,7 +231,7 @@ const ApplicationIncome = () => {
                 label={t("application.financial.income.prompt")}
                 labelClassName={"text__caps-spaced"}
                 validation={{ required: true, min: 0.01 }}
-                error={errors.income}
+                error={!!errors.income}
                 register={register}
                 errorMessage={t("errors.numberError")}
                 setValue={setValue}
@@ -240,7 +246,7 @@ const ApplicationIncome = () => {
                 <FieldGroup
                   type="radio"
                   name="incomePeriod"
-                  error={errors.incomePeriod}
+                  error={!!errors.incomePeriod}
                   errorMessage={t("errors.selectOption")}
                   register={register}
                   validation={{ required: true }}

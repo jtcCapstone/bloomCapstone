@@ -1,8 +1,8 @@
 /** @jest-environment jsdom */
 import React from "react"
 import { render, screen, fireEvent } from "@testing-library/react"
-import { IncomeAssistant } from "../IncomeAssistant"
-import { AssistantProvider } from "../../context/AssistantContext"
+import IncomeAssistantComponent from "../apppages/income/IncomeAssistant"
+import { AssistantProvider } from "../context/AssistantContext"
 
 jest.mock("../../shared/ChatbotPanel", () => {
   return function ChatbotPanel(props) {
@@ -26,7 +26,7 @@ describe("IncomeAssistant", () => {
   test("renders when open", () => {
     render(
       <AssistantProvider totalSteps={4}>
-        <IncomeAssistant isOpen={true} onClose={mockOnClose} />
+        <IncomeAssistantComponent isOpen={true} onClose={mockOnClose} />
       </AssistantProvider>
     )
     expect(screen.getByTestId("chatbot-panel")).toBeInTheDocument()
@@ -35,7 +35,7 @@ describe("IncomeAssistant", () => {
   test("does not render when closed", () => {
     render(
       <AssistantProvider totalSteps={4}>
-        <IncomeAssistant isOpen={false} onClose={mockOnClose} />
+        <IncomeAssistantComponent isOpen={false} onClose={mockOnClose} />
       </AssistantProvider>
     )
     expect(screen.queryByTestId("chatbot-panel")).toBeNull()
@@ -44,7 +44,7 @@ describe("IncomeAssistant", () => {
   test("calls onClose when minimize button is clicked", () => {
     render(
       <AssistantProvider totalSteps={4}>
-        <IncomeAssistant isOpen={true} onClose={mockOnClose} />
+        <IncomeAssistantComponent isOpen={true} onClose={mockOnClose} />
       </AssistantProvider>
     )
     fireEvent.click(screen.getByTestId("minimize-button"))

@@ -1,16 +1,16 @@
+/*
+  AssistantContext.tsx
+  ===================
+  Provides context and state management for the assistant chatbot.
+*/
+
 import React, { createContext, useContext, useReducer, ReactNode, useRef } from "react"
-import { sendChatMessage } from "../chatService"
+import { sendLLMMessage } from "../shared/ChatLlmService"
+import { ChatMessage } from "../controller/AssistantController.types"
 
-// Types
-export interface Message {
-  id: string
-  content: string
-  type: "user" | "assistant"
-  timestamp: Date
-}
-
+// Defines the structure of the assistant state.
 interface AssistantState {
-  messages: Message[]
+  messages: ChatMessage[]
   isProcessing: boolean
   currentStep: number
   totalSteps: number
@@ -18,15 +18,17 @@ interface AssistantState {
   isOpen: boolean
 }
 
+// Defines possible actions to modify the assistant state.
 type AssistantAction =
-  | { type: "SET_MESSAGES"; payload: Message[] }
-  | { type: "ADD_MESSAGE"; payload: Message }
+  | { type: "SET_MESSAGES"; payload: ChatMessage[] }
+  | { type: "ADD_MESSAGE"; payload: ChatMessage }
   | { type: "SET_PROCESSING"; payload: boolean }
   | { type: "SET_STEP"; payload: number }
   | { type: "SET_ERROR"; payload: string | null }
   | { type: "SET_OPEN"; payload: boolean }
   | { type: "RESET" }
 
+// Defines the context value provided by the AssistantProvider.
 interface AssistantContextType {
   state: AssistantState
   sendMessage: (content: string, type?: "user" | "assistant") => void
@@ -34,9 +36,9 @@ interface AssistantContextType {
   setError: (error: string | null) => void
   setOpen: (isOpen: boolean) => void
   reset: () => void
+  initializeAssistant: (initialMessage: string) => void
 }
 
-// Initial state
 const initialState: AssistantState = {
   messages: [],
   isProcessing: false,
@@ -46,7 +48,7 @@ const initialState: AssistantState = {
   isOpen: false,
 }
 
-// Reducer
+// Reducer function to update the assistant state.
 const assistantReducer = (state: AssistantState, action: AssistantAction): AssistantState => {
   switch (action.type) {
     case "SET_MESSAGES":
@@ -68,71 +70,80 @@ const assistantReducer = (state: AssistantState, action: AssistantAction): Assis
   }
 }
 
-// Context
+// Create the AssistantContext.
 const AssistantContext = createContext<AssistantContextType | undefined>(undefined)
 
-// Provider
+// Props for the AssistantProvider component.
 interface AssistantProviderProps {
   children: ReactNode
   totalSteps: number
 }
 
+// Provides the assistant state and functions via context.
 export const AssistantProvider: React.FC<AssistantProviderProps> = ({ children, totalSteps }) => {
   const [state, dispatch] = useReducer(assistantReducer, { ...initialState, totalSteps })
-  const messageCounter = useRef(0)
+  const messageCounter = useRef(0) // Used for unique message IDs
 
+  // Adds a message to the conversation and optionally sends user messages to the LLM.
   const sendMessage = async (content: string, type: "user" | "assistant" = "user") => {
-    const message: Message = {
+    const message: ChatMessage = {
       id: `${Date.now()}-${messageCounter.current++}`,
       content,
-      type,
+      sender: "user", // Messages sent via this function are always from the user
       timestamp: new Date(),
     }
     dispatch({ type: "ADD_MESSAGE", payload: message })
 
-    // If the message is from the user, send it to the LLM
-    if (type === 'user'){
-      dispatch({ type:'SET_PROCESSING', payload:true})
-
+    if (type === "user") {
+      dispatch({ type: "SET_PROCESSING", payload: true })
       try {
-        // history is the array of messages from the user
-        const history = state.messages.map(msg =>msg.content)
-
-        // send message to llm and wait for response
-        const response = await sendChatMessage(content,history)
-
-        const assistantMessage: Message = {
+        const history = state.messages.map((msg) => msg.content)
+        const response = await sendLLMMessage(content, history)
+        const assistantMessage: ChatMessage = {
           id: `${Date.now()}-${messageCounter.current++}`,
           content: response,
-          type: 'assistant',
+          sender: "assistant",
           timestamp: new Date(),
         }
-
-        dispatch({ type:'ADD_MESSAGE', payload:assistantMessage})
-        // catch any errors from the LLM
-      } catch (error){
+        dispatch({ type: "ADD_MESSAGE", payload: assistantMessage })
+      } catch (error) {
         console.error("Error getting response from LLM: ", error)
-        dispatch({ type:'SET_ERROR', payload: 'Failed to get response'})
+        dispatch({ type: "SET_ERROR", payload: "Failed to get response" })
       } finally {
-        dispatch({ type:'SET_PROCESSING', payload:false})
+        dispatch({ type: "SET_PROCESSING", payload: false })
       }
     }
   }
 
+  // Updates the current step in the conversation.
   const setStep = (step: number) => {
     dispatch({ type: "SET_STEP", payload: step })
   }
 
+  // Sets an error message in the state.
   const setError = (error: string | null) => {
     dispatch({ type: "SET_ERROR", payload: error })
   }
 
+  // Toggles the open/closed state of the assistant.
   const setOpen = (isOpen: boolean) => {
     dispatch({ type: "SET_OPEN", payload: isOpen })
   }
 
+  // Resets the entire state to initial values.
   const reset = () => {
     dispatch({ type: "RESET" })
+  }
+
+  // Initializes the conversation with a welcome message.
+  const initializeAssistant = (initialMessage: string) => {
+    const message: ChatMessage = {
+      id: `${Date.now()}-${messageCounter.current++}`,
+      content: initialMessage,
+      sender: "assistant", // Initial message is from the assistant
+      timestamp: new Date(),
+    }
+    dispatch({ type: "SET_MESSAGES", payload: [message] })
   }
 
   return (
@@ -144,6 +155,7 @@ export const AssistantProvider: React.FC<AssistantProviderProps> = ({ children, 
         setError,
         setOpen,
         reset,
+        initializeAssistant,
       }}
     >
       {children}
@@ -151,7 +163,7 @@ export const AssistantProvider: React.FC<AssistantProviderProps> = ({ children, 
   )
 }
 
-// Hook
+// Custom hook to consume the AssistantContext.
 export const useAssistant = () => {
   const context = useContext(AssistantContext)
   if (context === undefined) {

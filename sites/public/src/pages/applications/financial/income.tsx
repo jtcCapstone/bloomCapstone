@@ -20,9 +20,8 @@ import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
-import AssistantOpenButton from "../../../components/assistant/shared/AssistantOpenButton"
-import { IncomeAssistant } from "../../../components/assistant/apppages/income/IncomeAssistant"
-import { AssistantProvider } from "../../../components/assistant/context/AssistantContext"
+import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
+import IncomeAssistant from "../../../components/assistant/monolith"
 
 type IncomeError = "low" | "high" | null
 type IncomePeriod = "perMonth" | "perYear"
@@ -128,16 +127,14 @@ const ApplicationIncome = () => {
   return (
     <>
       {isChatbotOpen && (
-        <AssistantProvider totalSteps={4}>
-          <IncomeAssistant
-            isOpen={isChatbotOpen}
-            onClose={() => {
-              setIsChatbotOpen(false)
-              setIsChatbotMinimized(true)
-            }}
-            onConfirm={handleConfirmEstimate}
-          />
-        </AssistantProvider>
+        <IncomeAssistant
+          isOpen={isChatbotOpen}
+          onClose={() => {
+            setIsChatbotOpen(false)
+            setIsChatbotMinimized(true)
+          }}
+          onConfirm={handleConfirmEstimate}
+        />
       )}
 
       {isChatbotMinimized && (

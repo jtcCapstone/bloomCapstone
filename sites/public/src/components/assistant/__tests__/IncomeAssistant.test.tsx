@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import React from "react"
 import { render, screen, fireEvent } from "@testing-library/react"
-import IncomeAssistant from "../monolith"
+import IncomeAssistant from "../Income/IncomeAssistant"
 
 describe("IncomeAssistant", () => {
   const mockOnClose = jest.fn()

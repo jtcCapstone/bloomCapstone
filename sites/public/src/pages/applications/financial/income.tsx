@@ -21,7 +21,7 @@ import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
 import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
-import IncomeAssistant from "../../../components/assistant/monolith"
+import IncomeAssistant from "../../../components/assistant/Income/IncomeAssistant"
 
 type IncomeError = "low" | "high" | null
 type IncomePeriod = "perMonth" | "perYear"

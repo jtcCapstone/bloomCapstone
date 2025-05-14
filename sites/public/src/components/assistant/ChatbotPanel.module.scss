@@ -1,13 +1,13 @@
 .chatbotContainer {
   position: fixed;
-  bottom: var(--seeds-s4);
-  right: var(--seeds-s4);
-  width: 320px;
-  height: 448px;
+  bottom: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
   background-color: var(--seeds-color-white);
   border: 1px solid var(--seeds-color-gray-300);
-  border-radius: var(--seeds-rounded-2xl);
-  box-shadow: var(--seeds-shadow-lg);
+  border-radius: var(--seeds-rounded-lg);
+  box-shadow: var(--seeds-shadow-md);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -176,4 +176,17 @@
 .customButton:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+}
+
+@media (min-width: 769px) {
+  .chatbotContainer {
+    top: auto;
+    left: auto;
+    bottom: var(--seeds-s4);
+    right: var(--seeds-s4);
+    width: 400px;      height: 600px;
+    border: 1px solid var(--seeds-color-gray-300);
+    border-radius: var(--seeds-rounded-lg);
+    box-shadow: var(--seeds-shadow-md);
+  }
 }

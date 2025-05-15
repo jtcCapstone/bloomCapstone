@@ -12,61 +12,78 @@ The Smart-Housing Assistant module provides a robust chat interface powered by b
 
 ## Features
 
-- **Interactive Chat Interface:** Engage users with a smooth conversational UI.
-- **Dynamic Conversation Flow:** Employs scripted questions and supports dynamic query generation.
-- **Mode Switching:** Easily toggle between logic-driven and pure LLM modes.
-- **State Management:** Utilizes React Context for managing conversation state.
+- **Smart-Housing Assistant**: An interactive chatbot that assists users with affordable housing inquiries and application processes.
+- **Dynamic Conversation Flow**: Supports scripted questions and live LLM responses, allowing users to navigate the application process efficiently.
+- **Current Working Application Page(income.tsx**: Integration with income validation system
+- **LLM Service**: Processes chat requests and generates responses using a language model, with input sanitization to protect user data.
 
 ## Folder Structure
 
-- **apppages/**: Domain-specific assistant implementations (e.g., Income Assistant).
-- **controller/**: Contains controller logic managing the conversation flow.
-- **context/**: Provides React Context and state management for the assistant.
-- **shared/**: Shared UI components (e.g., ChatbotPanel, ErrorBoundary).
-- **project_tracking/**: Feature documentation and tracking files.
-- \***\*tests**/\*\*: Test suites for all assistant components.
+- **Income/**: Contains the implementation specific to the Income Assistant, including scripts and components related to income reporting.
+  - **IncomeAssistant.tsx**: The main component for the Income Assistant.
+- **shared/**: Contains shared UI components used across different assistants.
 
-## Usage
+  - **ChatbotPanel.tsx**: The panel that displays the chatbot interface.
+  - **ErrorBoundary.tsx**: Component for error handling in the assistant.
+  - **AssistantOpenButton.tsx**: Button component to open the assistant.
 
-### Integration Guide
+- **controller/**: Contains logic for managing the conversation flow and interactions within the assistant.
 
-The Smart-Housing Assistant is a modular set of components and services designed to deliver an interactive, conversational experience. Use the following guidelines to integrate and utilize the new files and services:
+- **context/**: Provides React Context for managing the state of the assistant across different components.
 
-1. **Component Integration:**
+- **scripts/**: Contains various scripts used by the assistants for conversation management and logic.
 
-   - Import the desired assistant component (e.g., `IncomeAssistant`) from the `apppages/` directory to add chat capabilities.
+  - **incomeScript.ts**: Script used for guiding the conversation in the Income Assistant.
+
+- **types.ts**: Type definitions used throughout the assistant components.
+
+- ****tests**/**: Test suites for all assistant components, ensuring functionality and reliability.
+
+- **project_tracking/**: Documentation and tracking files related to the development and features of the assistant.
+
+## Usage Guide
+
+### Running the Application
+
+To run the public application, use the following command:
+
+```bash
+yarn dev:public
+```
+
+This command starts the public-facing application on [http://localhost:3000](http://localhost:3000). Ensure that the backend API is also running, as the frontend relies on it for data.
+
+### Integrating the Smart-Housing Assistant
+
+To integrate the Smart-Housing Assistant into your application pages, follow these steps:
+
+1. **Import the Required Components**:
+   In your application page file (e.g., `@income.tsx`), import the `IncomeAssistant` and `AssistantOpenButton` components from the appropriate paths. Here’s an example:
 
    ```tsx
-   import IncomeAssistant from "components/assistant/apppages/income/IncomeAssistant"
-
-   function App() {
-     return (
-       <div>
-         <IncomeAssistant isOpen={true} onClose={() => console.log("Assistant closed")} />
-       </div>
-     )
-   }
-
-   export default App
+   import React, { useState } from "react"
+   import IncomeAssistant from "components/assistant/Income/IncomeAssistant"
+   import AssistantOpenButton from "components/assistant/AssistantOpenButton"
    ```
 
-2. **Controller & State Management:**
+### Adding the Assistant to Other Application Pages
 
-   - Conversation logic is managed by `AssistantController` (in `controller/`), which handles message flow and dynamic interactions.
-   - Global state is maintained via `AssistantContext` (in `context/`). Wrap your components with `AssistantProvider` if shared state access is needed.
+The Smart-Housing Assistant has been designed with modularity and scalability in mind, allowing for easy integration into various application pages. This system architecture enables developers to quickly add the assistant to new pages without significant overhead.
 
-3. **UI & Customization:**
-   - Shared UI components like `ChatbotPanel` (in `shared/`) render the chatbot interface. Customize styles and behavior as needed.
-   - Modify assistant scripts in `apppages/` to tailor conversation flows. Refer to `IncomeAssistant.types.ts` for interface guidelines.
+#### Design Considerations:
 
-Follow these steps to effectively integrate and extend the Smart-Housing Assistant in your projects.
+- **Component-Based Architecture**: The assistant is built as a set of reusable React components (`IncomeAssistant` and `AssistantOpenButton`). This allows developers to import and use these components in any page of the application seamlessly.
+- **State Management**: By utilizing React's `useState` hook, the assistant's visibility can be easily controlled within any component. This design pattern promotes consistency across different pages while maintaining flexibility.
 
-## Development
+- **Customizable Props**: The components accept props that allow for customization, such as the button title and confirmation handling. This makes it easy to tailor the assistant's behavior to fit the specific needs of each page.
+
+- **Scalable Integration**: New pages can be integrated with the assistant by simply repeating the import and component integration steps. This approach minimizes the need for redundant code and promotes a clean, maintainable codebase.
+
+By following these design principles, the Smart-Housing Assistant can be efficiently expanded to other application pages, enhancing the overall user experience and providing consistent support throughout the application process.
 
 Follow the project's standard development practices:
 
 - Ensure code changes adhere to established coding standards.
-- Write tests and run the test suite in the `__tests__` folder to validate functionality.
 - Refer to the main repository documentation for additional guidelines.
 
 ## License

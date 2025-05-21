@@ -9,6 +9,7 @@ const INCOME_QUESTIONS: AssistantQuestion[] = [
       const num = parseInt(value)
       return !isNaN(num) && num > 0
     },
+    invalidMessage: "Please enter a valid number greater than 0 for household income earners.",
     dynamicQuestionHandler: (input: string) => {
       const questionsToAdd: AssistantQuestion[] = []
       const count = parseInt(input)
@@ -24,6 +25,7 @@ const INCOME_QUESTIONS: AssistantQuestion[] = [
               const cleaned = value.replace(/[$,]/g, "")
               return /^[0-9]+(\.[0-9]+)?$/.test(cleaned) && parseFloat(cleaned) > 0
             },
+            invalidMessage: "Please enter a valid hourly rate, like 20 or $18.50.",
           },
           {
             id: `hours_per_week_${i + 1}`,
@@ -33,6 +35,7 @@ const INCOME_QUESTIONS: AssistantQuestion[] = [
               const num = parseInt(value)
               return !isNaN(num) && num > 0 && num <= 168
             },
+            invalidMessage: "Please enter a number between 1 and 168 for hours worked per week.",
           }
         )
       }
@@ -44,8 +47,8 @@ const INCOME_QUESTIONS: AssistantQuestion[] = [
 export const incomeAssistantScript: AssistantScript = {
   welcomeMessage: "Welcome! Let's calculate your income.",
   questions: INCOME_QUESTIONS,
-  fallbackInvalid: "Invalid answer.",
-  fallbackError: "Error processing responses.",
+  fallbackInvalid: "Please check your answer and try again.",
+  fallbackError: "Sorry, there was an error processing your responses.",
   getFinalResult: (responses: string[]) => {
     const householdCount = parseInt(responses[0], 10)
     if (isNaN(householdCount) || householdCount <= 0) {

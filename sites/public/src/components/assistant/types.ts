@@ -10,6 +10,7 @@ export interface AssistantQuestion {
   question: string
   type: string
   validation?: (value: string) => boolean
+  invalidMessage?: string
   dynamicQuestionHandler?: (input: string, responses: string[]) => AssistantQuestion[]
 }
 

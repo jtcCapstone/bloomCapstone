@@ -51,8 +51,10 @@ export const createAssistantController = (script: AssistantScript) => {
           invalidInputCount = 0
           invalidInputs = []
         } else {
-          responseText = script.fallbackInvalid
+          //  Use specific invalid message if available
+          responseText = question.invalidMessage || script.fallbackInvalid
         }
+
         return { responseText, flowEnded: false }
       } else {
         validResponses[currentStep] = input
@@ -65,12 +67,14 @@ export const createAssistantController = (script: AssistantScript) => {
             ...question.dynamicQuestionHandler(input, Object.values(validResponses)),
           ]
         }
+
         currentStep++
         return currentStep < currentQuestions.length
           ? { responseText: currentQuestions[currentStep].question, flowEnded: false }
           : { responseText: "", flowEnded: true }
       }
     }
+
     return { responseText: "An error occurred", flowEnded: false }
   }
 

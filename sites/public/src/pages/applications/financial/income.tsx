@@ -121,6 +121,7 @@ const ApplicationIncome = () => {
 
   const handleConfirmEstimate = (estimate: string) => {
     setValue("income", estimate)
+    setValue("incomePeriod", "perYear")
     console.log("Income form updated with estimate:", estimate)
   }
 

@@ -44,10 +44,17 @@ export class LlmService {
     this.logger.log(`LLM API URL: ${this.apiUrl}`);
   }
 
+  // This is the main method that generates a response based on the prompt and conversation history
   async generateResponse(
     prompt: string,
     history: string[] = [],
   ): Promise<string> {
+    // catch forbidden topics to prevent the conversation from going off-topic
+    const forbidden = ['crypto', 'bitcoin', 'ethereum', 'sports', 'politics'];
+    if (forbidden.some((w) => new RegExp(`\\b${w}\\b`, 'i').test(prompt))) {
+      return 'I can only assist with the Bloom housing application process.';
+    }
+
     // Included a bunch of logs for debugging purposes
     try {
       const startTime = Date.now();
@@ -202,8 +209,9 @@ export class LlmService {
   private buildPrompt(userInput: string, history: string[]): string {
     const systemPrompt =
       'You are a helpful assistant. ' +
-      'Provide direct, natural responses to questions. ' +
-      'Keep responses concise but complete. ' +
+      'Provide direct, natural responses **only about the Bloom housing application process**. ' +
+      'If asked about any unrelated topic like sports/ politics / crypto / relationships, reply by insisting to ask only about the Bloom housing application process. ' +
+      'Keep responses one sentence but complete. ' +
       'Never mention that you are an AI. ' +
       'Never ask for personal information. ' +
       'Do not add dialog markers like "Human:" or "AI:" in your response.';

@@ -11,6 +11,7 @@ import { MfaStrategy } from '../passports/mfa.strategy';
 import { JwtStrategy } from '../passports/jwt.strategy';
 import { EmailModule } from './email.module';
 import { SingleUseCodeStrategy } from '../passports/single-use-code.strategy';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -21,6 +22,12 @@ import { SingleUseCodeStrategy } from '../passports/single-use-code.strategy';
     EmailModule,
     JwtModule.register({
       secret: process.env.APP_SECRET,
+    }),
+    JwtModule.registerAsync({
+      useFactory: (cs: ConfigService) => ({
+        secret: cs.get<string>('APP_SECRET'),
+      }),
+      inject: [ConfigService],
     }),
     EmailModule,
   ],

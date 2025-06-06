@@ -24,6 +24,7 @@ import { ScriptRunnerModule } from './script-runner.module';
 import { LotteryModule } from './lottery.module';
 import { FeatureFlagModule } from './feature-flag.module';
 import { LlmModule } from './llm.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -39,6 +40,9 @@ import { LlmModule } from './llm.module';
     AssetModule,
     UserModule,
     PrismaModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     AuthModule,
     ApplicationFlaggedSetModule,
     MapLayerModule,

@@ -13,10 +13,15 @@ import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import { MultiselectQuestionsApplicationSectionEnum } from "@bloom-housing/shared-helpers/src/types/backend-swagger"
 import ApplicationFormLayout from "../../../layouts/application-form"
+import Assistant from "../../../components/assistant/General/Assistant"
+import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
 
 const ApplicationPreferencesGeneral = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("generalPool")
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
+
   const currentPageSection = listingSectionQuestions(
     listing,
     MultiselectQuestionsApplicationSectionEnum.programs
@@ -44,7 +49,14 @@ const ApplicationPreferencesGeneral = () => {
       <Form onSubmit={handleSubmit(onSubmit)}>
         <ApplicationFormLayout
           listingName={listing?.name}
-          heading={t("application.preferences.general.title")}
+          heading={
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <span>{t("application.preferences.general.title")}</span>
+              {!isChatbotOpen && !isChatbotMinimized && (
+                <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+              )}
+            </div>
+          }
           subheading={t("application.preferences.general.preamble")}
           progressNavProps={{
             currentPageSection: currentPageSection,
@@ -58,6 +70,16 @@ const ApplicationPreferencesGeneral = () => {
           conductor={conductor}
           hideBorder={true}
         />
+
+        {isChatbotOpen && (
+          <Assistant
+            isOpen={isChatbotOpen}
+            onClose={() => {
+              setIsChatbotOpen(false)
+              setIsChatbotMinimized(false)
+            }}
+          />
+        )}
       </Form>
     </FormsLayout>
   )

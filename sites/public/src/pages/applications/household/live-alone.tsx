@@ -10,12 +10,16 @@ import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
 
 const ApplicationLiveAlone = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("liveAlone")
   const [validateHousehold, setValidateHousehold] = useState(true)
   const currentPageSection = 2
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { handleSubmit, register, errors, clearErrors, trigger } = useForm()
@@ -51,78 +55,115 @@ const ApplicationLiveAlone = () => {
   ]
 
   return (
-    <FormsLayout>
-      <Form className="mb-4" onSubmit={handleSubmit(onSubmit)}>
-        <ApplicationFormLayout
-          listingName={listing?.name}
-          heading={t("application.household.liveAlone.title")}
-          progressNavProps={{
-            currentPageSection: currentPageSection,
-            completedSections: application.completedSections,
-            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-            mounted: OnClientSide(),
+    <>
+      {isChatbotOpen && (
+        <Assistant
+          isOpen={isChatbotOpen}
+          onClose={() => {
+            setIsChatbotOpen(false)
+            setIsChatbotMinimized(true)
           }}
-          backLink={{
-            url: conductor.determinePreviousUrl(),
-          }}
-          conductor={conductor}
-        >
-          {Object.entries(errors).length > 0 && (
-            <Alert
-              className={styles["message-inside-card"]}
-              variant="alert"
-              fullwidth
-              id={"application-alert-box"}
-            >
-              {t("errors.errorsToResolve")}
-            </Alert>
-          )}
-          <div>
-            <HouseholdSizeField
-              assistanceUrl={t("application.household.assistanceUrl")}
-              clearErrors={clearErrors}
-              error={errors.householdSize}
-              householdSize={application.householdSize}
-              householdSizeMax={listing?.householdSizeMax}
-              householdSizeMin={listing?.householdSizeMin}
-              register={register}
-              validate={validateHousehold}
-            />
-          </div>
+        />
+      )}
 
-          <CardSection divider={"flush"} className={"border-none"}>
-            <fieldset
-              onChange={(event: ChangeEvent<any>) => {
-                if (event.target.value === "liveAlone") {
-                  application.householdSize = 1
-                  application.householdMember = []
-                  setValidateHousehold(true)
-                } else {
-                  if (application.householdSize === 1) application.householdSize = 0
-                  setValidateHousehold(false)
-                }
-              }}
-            >
-              <legend className={`text__caps-spaced ${errors?.type ? "text-alert" : ""}`}>
-                {t("application.household.householdMembers")}
-              </legend>
-              <p className="field-note mb-4">{t("t.pleaseSelectOne")}</p>
-              <FieldGroup
-                type="radio"
-                name="householdSize"
+      {isChatbotMinimized && (
+        <button
+          type="button"
+          className={styles["assistant-reopen-button"]}
+          onClick={() => {
+            setIsChatbotOpen(true)
+            setIsChatbotMinimized(false)
+          }}
+        >
+          💬 Assistant Help - Click to Reopen
+        </button>
+      )}
+
+      <FormsLayout>
+        <Form className="mb-4" onSubmit={handleSubmit(onSubmit)}>
+          <ApplicationFormLayout
+            listingName={listing?.name}
+            heading={
+              <div className={styles["heading-with-assistant"]}>
+                <h2>{t("application.household.liveAlone.title")}</h2>
+                {!isChatbotOpen && !isChatbotMinimized && (
+                  <AssistantOpenButton
+                    onClick={() => {
+                      setIsChatbotOpen(true)
+                      setIsChatbotMinimized(false)
+                    }}
+                  />
+                )}
+              </div>
+            }
+            progressNavProps={{
+              currentPageSection: currentPageSection,
+              completedSections: application.completedSections,
+              labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+              mounted: OnClientSide(),
+            }}
+            backLink={{
+              url: conductor.determinePreviousUrl(),
+            }}
+            conductor={conductor}
+          >
+            {Object.entries(errors).length > 0 && (
+              <Alert
+                className={styles["message-inside-card"]}
+                variant="alert"
+                fullwidth
+                id={"application-alert-box"}
+              >
+                {t("errors.errorsToResolve")}
+              </Alert>
+            )}
+            <div>
+              <HouseholdSizeField
+                assistanceUrl={t("application.household.assistanceUrl")}
+                clearErrors={clearErrors}
                 error={errors.householdSize}
-                errorMessage={t("errors.selectOption")}
+                householdSize={application.householdSize}
+                householdSizeMax={listing?.householdSizeMax}
+                householdSizeMin={listing?.householdSizeMin}
                 register={register}
-                validation={{ required: true }}
-                fields={householdSizeValues}
-                fieldGroupClassName="grid grid-cols-1"
-                fieldClassName="ml-0"
+                validate={validateHousehold}
               />
-            </fieldset>
-          </CardSection>
-        </ApplicationFormLayout>
-      </Form>
-    </FormsLayout>
+            </div>
+
+            <CardSection divider={"flush"} className={"border-none"}>
+              <fieldset
+                onChange={(event: ChangeEvent<any>) => {
+                  if (event.target.value === "liveAlone") {
+                    application.householdSize = 1
+                    application.householdMember = []
+                    setValidateHousehold(true)
+                  } else {
+                    if (application.householdSize === 1) application.householdSize = 0
+                    setValidateHousehold(false)
+                  }
+                }}
+              >
+                <legend className={`text__caps-spaced ${errors?.type ? "text-alert" : ""}`}>
+                  {t("application.household.householdMembers")}
+                </legend>
+                <p className="field-note mb-4">{t("t.pleaseSelectOne")}</p>
+                <FieldGroup
+                  type="radio"
+                  name="householdSize"
+                  error={errors.householdSize}
+                  errorMessage={t("errors.selectOption")}
+                  register={register}
+                  validation={{ required: true }}
+                  fields={householdSizeValues}
+                  fieldGroupClassName="grid grid-cols-1"
+                  fieldClassName="ml-0"
+                />
+              </fieldset>
+            </CardSection>
+          </ApplicationFormLayout>
+        </Form>
+      </FormsLayout>
+    </>
   )
 }
 

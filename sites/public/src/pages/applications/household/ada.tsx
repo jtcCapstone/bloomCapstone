@@ -15,11 +15,15 @@ import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
 
 const ApplicationAda = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("adaHouseholdMembers")
   const currentPageSection = 2
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { register, handleSubmit, setValue, errors, getValues, clearErrors, trigger } = useForm<
@@ -105,64 +109,82 @@ const ApplicationAda = () => {
 
   return (
     <FormsLayout>
-      <Form onSubmit={handleSubmit(onSubmit, onError)}>
-        <ApplicationFormLayout
-          listingName={listing?.name}
-          heading={t("application.ada.title")}
-          subheading={t("application.ada.subTitle")}
-          progressNavProps={{
-            currentPageSection: currentPageSection,
-            completedSections: application.completedSections,
-            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-            mounted: OnClientSide(),
-          }}
-          backLink={{
-            url: conductor.determinePreviousUrl(),
-          }}
-          conductor={conductor}
-        >
-          {Object.entries(errors).length === Object.keys(getValues()).length &&
-            Object.keys(getValues()).length > 0 && (
-              <Alert
-                className={styles["message-inside-card"]}
-                variant="alert"
-                fullwidth
-                id={"application-alert-box"}
-              >
-                {t("errors.errorsToResolve")}
-              </Alert>
-            )}
+      <>
+        {isChatbotOpen && (
+          <Assistant
+            isOpen={isChatbotOpen}
+            onClose={() => {
+              setIsChatbotOpen(false)
+              setIsChatbotMinimized(false)
+            }}
+          />
+        )}
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+          <ApplicationFormLayout
+            listingName={listing?.name}
+            heading={
+              <div className={styles["heading-with-assistant"]}>
+                <h2>{t("application.ada.title")}</h2>
+                {!isChatbotOpen && !isChatbotMinimized && (
+                  <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+                )}
+              </div>
+            }
+            subheading={t("application.ada.subTitle")}
+            progressNavProps={{
+              currentPageSection: currentPageSection,
+              completedSections: application.completedSections,
+              labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+              mounted: OnClientSide(),
+            }}
+            backLink={{
+              url: conductor.determinePreviousUrl(),
+            }}
+            conductor={conductor}
+          >
+            {Object.entries(errors).length === Object.keys(getValues()).length &&
+              Object.keys(getValues()).length > 0 && (
+                <Alert
+                  className={styles["message-inside-card"]}
+                  variant="alert"
+                  fullwidth
+                  id={"application-alert-box"}
+                >
+                  {t("errors.errorsToResolve")}
+                </Alert>
+              )}
 
-          <CardSection divider={"flush"} className={"border-none"}>
-            <fieldset>
-              <legend className="sr-only">{t("application.details.adaPriorities")}</legend>
-              <FieldGroup
-                type="checkbox"
-                name="app-accessibility"
-                fields={adaFeaturesOptions}
-                register={register}
-                fieldGroupClassName="grid grid-cols-1 mt-4"
-                groupNote={t("application.household.preferredUnit.optionsLabel")}
-                fieldClassName="ml-0"
-                validation={{
-                  validate: () => {
-                    return !!Object.values(getValues()).filter((value) => value).length
-                  },
-                }}
-                error={
-                  Object.keys(errors).length === Object.keys(getValues()).length &&
-                  Object.keys(getValues()).length > 0
-                }
-              />
-            </fieldset>
-            {!!Object.keys(errors).length && (
-              <FormErrorMessage id="accessibilityCheckboxGroupError">
-                {t("errors.selectOption")}
-              </FormErrorMessage>
-            )}
-          </CardSection>
-        </ApplicationFormLayout>
-      </Form>
+            <CardSection divider={"flush"} className={"border-none"}>
+              <fieldset>
+                <legend className="sr-only">{t("application.details.adaPriorities")}</legend>
+                <FieldGroup
+                  type="checkbox"
+                  name="app-accessibility"
+                  fields={adaFeaturesOptions}
+                  register={register}
+                  fieldGroupClassName="grid grid-cols-1 mt-4"
+                  groupNote={t("application.household.preferredUnit.optionsLabel")}
+                  fieldClassName="ml-0"
+                  validation={{
+                    validate: () => {
+                      return !!Object.values(getValues()).filter((value) => value).length
+                    },
+                  }}
+                  error={
+                    Object.keys(errors).length === Object.keys(getValues()).length &&
+                    Object.keys(getValues()).length > 0
+                  }
+                />
+              </fieldset>
+              {!!Object.keys(errors).length && (
+                <FormErrorMessage id="accessibilityCheckboxGroupError">
+                  {t("errors.selectOption")}
+                </FormErrorMessage>
+              )}
+            </CardSection>
+          </ApplicationFormLayout>
+        </Form>
+      </>
     </FormsLayout>
   )
 }

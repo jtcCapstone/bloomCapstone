@@ -1,9 +1,13 @@
 import React, { useContext, useEffect, useState } from "react"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
+
+// Bloom UI Components
 import { AlertBox, AlertNotice, Field, FieldGroup, Form, t } from "@bloom-housing/ui-components"
 import { Alert } from "@bloom-housing/ui-seeds"
 import { CardSection } from "@bloom-housing/ui-seeds/src/blocks/Card"
+
+// Bloom Shared Helpers
 import {
   OnClientSide,
   PageView,
@@ -15,13 +19,18 @@ import {
   Listing,
   MultiselectQuestionsApplicationSectionEnum,
 } from "@bloom-housing/shared-helpers/src/types/backend-swagger"
+
+// Local Components & Layouts
 import FormsLayout from "../../../layouts/forms"
+import ApplicationFormLayout from "../../../layouts/application-form"
 import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
-import ApplicationFormLayout from "../../../layouts/application-form"
+
+// Styles
 import styles from "../../../layouts/application-form.module.scss"
-import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
-import IncomeAssistant from "../../../components/assistant/Income/IncomeAssistant"
+
+// Assistant Components
+import { Assistant, AssistantOpenButton } from "../../../components/assistant/types"
 
 type IncomeError = "low" | "high" | null
 type IncomePeriod = "perMonth" | "perYear"
@@ -128,7 +137,7 @@ const ApplicationIncome = () => {
   return (
     <>
       {isChatbotOpen && (
-        <IncomeAssistant
+        <Assistant
           isOpen={isChatbotOpen}
           onClose={() => {
             setIsChatbotOpen(false)

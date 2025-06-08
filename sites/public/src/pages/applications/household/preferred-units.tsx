@@ -16,11 +16,15 @@ import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import FormsLayout from "../../../layouts/forms"
 import styles from "../../../layouts/application-form.module.scss"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
 
 const ApplicationPreferredUnits = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("preferredUnitSize")
   const currentPageSection = 2
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { register, handleSubmit, errors, trigger } = useForm()
@@ -64,53 +68,73 @@ const ApplicationPreferredUnits = () => {
 
   return (
     <FormsLayout>
-      <Form onSubmit={handleSubmit(onSubmit, onError)}>
-        <ApplicationFormLayout
-          listingName={listing?.name}
-          heading={t("application.household.preferredUnit.title")}
-          subheading={t("application.household.preferredUnit.subTitle")}
-          progressNavProps={{
-            currentPageSection: currentPageSection,
-            completedSections: application.completedSections,
-            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-            mounted: OnClientSide(),
-          }}
-          backLink={{
-            url: conductor.determinePreviousUrl(),
-          }}
-          conductor={conductor}
-        >
-          {Object.entries(errors).length > 0 && (
-            <Alert
-              className={styles["message-inside-card"]}
-              variant="alert"
-              fullwidth
-              id={"application-alert-box"}
-            >
-              {t("errors.errorsToResolve")}
-            </Alert>
-          )}
+      <>
+        {isChatbotOpen && (
+          <Assistant
+            isOpen={isChatbotOpen}
+            onClose={() => {
+              setIsChatbotOpen(false)
+              setIsChatbotMinimized(false)
+            }}
+          />
+        )}
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+          <ApplicationFormLayout
+            listingName={listing?.name}
+            heading={
+              <div className={styles["heading-with-assistant"]}>
+                <h2>{t("application.household.preferredUnit.title")}</h2>
+                {!isChatbotOpen && !isChatbotMinimized && (
+                  <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+                )}
+              </div>
+            }
+            subheading={t("application.household.preferredUnit.subTitle")}
+            progressNavProps={{
+              currentPageSection: currentPageSection,
+              completedSections: application.completedSections,
+              labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+              mounted: OnClientSide(),
+            }}
+            backLink={{
+              url: conductor.determinePreviousUrl(),
+            }}
+            conductor={conductor}
+          >
+            {Object.entries(errors).length > 0 && (
+              <Alert
+                className={styles["message-inside-card"]}
+                variant="alert"
+                fullwidth
+                id={"application-alert-box"}
+              >
+                {t("errors.errorsToResolve")}
+              </Alert>
+            )}
 
-          <CardSection divider={"flush"} className={"border-none"}>
-            <fieldset>
-              <legend className="sr-only">{t("application.household.preferredUnit.legend")}</legend>
-              <FieldGroup
-                type="checkbox"
-                fieldGroupClassName="grid grid-cols-1"
-                fieldClassName="ml-0"
-                name="preferredUnit"
-                groupNote={t("application.household.preferredUnit.optionsLabel")}
-                fields={preferredUnitOptions}
-                error={!!errors.preferredUnit}
-                errorMessage={t("errors.selectAtLeastOne")}
-                validation={{ required: true }}
-                register={register}
-                dataTestId={"app-preferred-units"}
-              />
-            </fieldset>
-          </CardSection>
-        </ApplicationFormLayout>
-      </Form>
+            <CardSection divider={"flush"} className={"border-none"}>
+              <fieldset>
+                <legend className="sr-only">
+                  {t("application.household.preferredUnit.legend")}
+                </legend>
+                <FieldGroup
+                  type="checkbox"
+                  fieldGroupClassName="grid grid-cols-1"
+                  fieldClassName="ml-0"
+                  name="preferredUnit"
+                  groupNote={t("application.household.preferredUnit.optionsLabel")}
+                  fields={preferredUnitOptions}
+                  error={!!errors.preferredUnit}
+                  errorMessage={t("errors.selectAtLeastOne")}
+                  validation={{ required: true }}
+                  register={register}
+                  dataTestId={"app-preferred-units"}
+                />
+              </fieldset>
+            </CardSection>
+          </ApplicationFormLayout>
+        </Form>
+      </>
     </FormsLayout>
   )
 }

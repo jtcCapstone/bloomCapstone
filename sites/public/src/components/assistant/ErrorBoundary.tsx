@@ -22,13 +22,33 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   render(): ReactNode {
     if (this.state.hasError) {
+      // Check for specific error types
+      const isConnectionError =
+        this.state.error?.message?.includes("ETIMEDOUT") ||
+        this.state.error?.message?.includes("connect")
+
       return (
         <div className={styles.errorContainer}>
-          <h2>Something went wrong.</h2>
-          {this.state.error && (
-            <pre className={styles.errorMessage}>{this.state.error.message}</pre>
-          )}
-          <button onClick={this.handleReset}>Try Again</button>
+          <h2>
+            {isConnectionError
+              ? "AI Assistant Unavailable"
+              : "Something went wrong with the Assistant"}
+          </h2>
+          <p className={styles.errorMessage}>
+            {isConnectionError
+              ? "The AI service is currently unavailable. This might be temporary - please try again in a few moments."
+              : "We encountered an unexpected error. Please try refreshing the page."}
+          </p>
+          <div className={styles.buttonContainer}>
+            <button onClick={this.handleReset} className={styles.retryButton}>
+              Try Again
+            </button>
+            {isConnectionError && (
+              <button onClick={() => window.location.reload()} className={styles.refreshButton}>
+                Refresh Page
+              </button>
+            )}
+          </div>
         </div>
       )
     }

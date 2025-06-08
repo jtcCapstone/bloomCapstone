@@ -23,6 +23,8 @@ import {
 } from "@bloom-housing/shared-helpers/src/types/backend-swagger"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import { Button } from "@bloom-housing/ui-seeds"
+import Assistant from "../../../components/assistant/General/Assistant"
+import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
 
 const ApplicationTerms = () => {
   const router = useRouter()
@@ -31,6 +33,8 @@ const ApplicationTerms = () => {
   const toastyRef = useToastyRef()
   const [apiError, setApiError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
 
   let currentPageSection = 4
   if (listingSectionQuestions(listing, MultiselectQuestionsApplicationSectionEnum.programs)?.length)
@@ -139,7 +143,14 @@ const ApplicationTerms = () => {
       <Form id="review-terms" onSubmit={handleSubmit(onSubmit)}>
         <ApplicationFormLayout
           listingName={listing?.name}
-          heading={t("application.review.terms.title")}
+          heading={
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <span>{t("application.review.terms.title")}</span>
+              {!isChatbotOpen && !isChatbotMinimized && (
+                <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+              )}
+            </div>
+          }
           progressNavProps={{
             currentPageSection: currentPageSection,
             completedSections: application.completedSections,
@@ -214,6 +225,16 @@ const ApplicationTerms = () => {
               {t("t.submit")}
             </Button>
           </CardSection>
+
+          {isChatbotOpen && (
+            <Assistant
+              isOpen={isChatbotOpen}
+              onClose={() => {
+                setIsChatbotOpen(false)
+                setIsChatbotMinimized(false)
+              }}
+            />
+          )}
         </ApplicationFormLayout>
       </Form>
     </FormsLayout>

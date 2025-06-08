@@ -15,11 +15,15 @@ import FormsLayout from "../../../layouts/forms"
 import { AppSubmissionContext } from "../../../lib/applications/AppSubmissionContext"
 import { UserStatus } from "../../../lib/constants"
 import { ReviewOrderTypeEnum } from "@bloom-housing/shared-helpers/src/types/backend-swagger"
+import Assistant from "../../../components/assistant/General/Assistant"
+import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
 
 const ApplicationConfirmation = () => {
   const { application, listing } = useContext(AppSubmissionContext)
   const { initialStateLoaded, profile } = useContext(AuthContext)
   const router = useRouter()
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
 
   const imageUrl = imageUrlFromListing(listing, parseInt(process.env.listingPhotoSize))[0]
 
@@ -55,10 +59,15 @@ const ApplicationConfirmation = () => {
       <BloomCard>
         <>
           <CardSection divider={"flush"}>
-            <Heading priority={1} size={"2xl"}>
-              {t("application.review.confirmation.title")}
-              {listing?.name}
-            </Heading>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+              <Heading priority={1} size={"2xl"}>
+                {t("application.review.confirmation.title")}
+                {listing?.name}
+              </Heading>
+              {!isChatbotOpen && !isChatbotMinimized && (
+                <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+              )}
+            </div>
           </CardSection>
 
           {imageUrl && <img src={imageUrl} alt={listing?.name} />}
@@ -130,6 +139,16 @@ const ApplicationConfirmation = () => {
           <CardSection>
             <Link href="/applications/view">{t("application.review.confirmation.print")}</Link>
           </CardSection>
+
+          {isChatbotOpen && (
+            <Assistant
+              isOpen={isChatbotOpen}
+              onClose={() => {
+                setIsChatbotOpen(false)
+                setIsChatbotMinimized(false)
+              }}
+            />
+          )}
         </>
       </BloomCard>
     </FormsLayout>

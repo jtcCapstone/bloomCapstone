@@ -9,10 +9,14 @@ import FormsLayout from "../../../layouts/forms"
 import { UserStatus } from "../../../lib/constants"
 import { useForm } from "react-hook-form"
 import { useFormConductor } from "../../../lib/hooks"
+import Assistant from "../../../components/assistant/General/Assistant"
+import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
 
 const ApplicationCommunityDisclaimer = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("communityDisclaimer")
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
   const currentPageSection = 1
 
   const { handleSubmit } = useForm()
@@ -32,7 +36,14 @@ const ApplicationCommunityDisclaimer = () => {
     <FormsLayout>
       <ApplicationFormLayout
         listingName={listing?.name}
-        heading={listing?.communityDisclaimerTitle ?? ""}
+        heading={
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <span>{listing?.communityDisclaimerTitle ?? ""}</span>
+            {!isChatbotOpen && !isChatbotMinimized && (
+              <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+            )}
+          </div>
+        }
         progressNavProps={{
           currentPageSection: currentPageSection,
           completedSections: application.completedSections,
@@ -56,6 +67,16 @@ const ApplicationCommunityDisclaimer = () => {
             </Button>
           </Form>
         </CardSection>
+
+        {isChatbotOpen && (
+          <Assistant
+            isOpen={isChatbotOpen}
+            onClose={() => {
+              setIsChatbotOpen(false)
+              setIsChatbotMinimized(false)
+            }}
+          />
+        )}
       </ApplicationFormLayout>
     </FormsLayout>
   )

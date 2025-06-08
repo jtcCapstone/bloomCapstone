@@ -25,6 +25,8 @@ import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
 import dayjs from "dayjs"
+import Assistant from "../../../components/assistant/General/Assistant"
+import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
 
 const ApplicationSummary = () => {
   const router = useRouter()
@@ -32,6 +34,8 @@ const ApplicationSummary = () => {
   const toastyRef = useToastyRef()
   const [validationError, setValidationError] = useState(false)
   const { conductor, application, listing } = useFormConductor("summary")
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
   let currentPageSection = 4
   if (listingSectionQuestions(listing, MultiselectQuestionsApplicationSectionEnum.programs)?.length)
     currentPageSection += 1
@@ -102,7 +106,14 @@ const ApplicationSummary = () => {
       <Form onSubmit={handleSubmit(onSubmit)}>
         <ApplicationFormLayout
           listingName={listing?.name}
-          heading={t("application.review.takeAMomentToReview")}
+          heading={
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <span>{t("application.review.takeAMomentToReview")}</span>
+              {!isChatbotOpen && !isChatbotMinimized && (
+                <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+              )}
+            </div>
+          }
           progressNavProps={{
             currentPageSection: currentPageSection,
             completedSections: application.completedSections,
@@ -156,6 +167,16 @@ const ApplicationSummary = () => {
               {t("t.confirm")}
             </Button>
           </CardSection>
+
+          {isChatbotOpen && (
+            <Assistant
+              isOpen={isChatbotOpen}
+              onClose={() => {
+                setIsChatbotOpen(false)
+                setIsChatbotMinimized(false)
+              }}
+            />
+          )}
         </ApplicationFormLayout>
       </Form>
     </FormsLayout>

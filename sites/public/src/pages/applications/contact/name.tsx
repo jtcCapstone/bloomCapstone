@@ -16,11 +16,15 @@ import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
 
 const ApplicationName = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("primaryApplicantName")
   const [autofilled, setAutofilled] = useState(false)
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = useState(false)
 
   const currentPageSection = 1
 
@@ -69,155 +73,198 @@ const ApplicationName = () => {
   }, [profile])
 
   return (
-    <FormsLayout>
-      <Form onSubmit={handleSubmit(onSubmit, onError)}>
-        <ApplicationFormLayout
-          listingName={listing?.name}
-          heading={t("application.name.title")}
-          progressNavProps={{
-            currentPageSection: currentPageSection,
-            completedSections: application.completedSections,
-            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-            mounted: OnClientSide(),
+    <>
+      {isChatbotOpen && (
+        <Assistant
+          isOpen={isChatbotOpen}
+          onClose={() => {
+            setIsChatbotOpen(false)
+            setIsChatbotMinimized(true)
           }}
-          backLink={{
-            url: autofilled ? `/applications/start/autofill` : `/applications/start/what-to-expect`,
+        />
+      )}
+
+      {isChatbotMinimized && (
+        <button
+          type="button"
+          className={styles["assistant-reopen-button"]}
+          onClick={() => {
+            setIsChatbotOpen(true)
+            setIsChatbotMinimized(false)
           }}
-          conductor={conductor}
         >
-          {Object.entries(errors).length > 0 && (
-            <Alert
-              className={styles["message-inside-card"]}
-              variant="alert"
-              fullwidth
-              id={"application-alert-box"}
-            >
-              {t("errors.errorsToResolve")}
-            </Alert>
-          )}
-          <CardSection divider={"inset"}>
-            <div id={"application-initial-page"}>
-              <fieldset>
-                <legend
-                  className={`text__caps-spaced ${errors.applicant?.firstName ? "text-alert" : ""}`}
-                >
-                  {t("application.name.yourName")}
-                  <LockIcon />
-                </legend>
+          💬 Assistant Help - Click to Reopen
+        </button>
+      )}
 
-                <Field
-                  name="applicant.firstName"
-                  label={t("application.name.firstOrGivenName")}
-                  disabled={autofilled}
-                  defaultValue={application.applicant.firstName}
-                  validation={{ required: true, maxLength: 64 }}
-                  error={errors.applicant?.firstName}
-                  errorMessage={
-                    errors.applicant?.firstName?.type === "maxLength"
-                      ? t("errors.maxLength", { length: 64 })
-                      : t("errors.givenNameError")
-                  }
-                  register={register}
-                  dataTestId={"app-primary-first-name"}
-                />
+      <FormsLayout>
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+          <ApplicationFormLayout
+            listingName={listing?.name}
+            heading={
+              <div className={styles["heading-with-assistant"]}>
+                <h2>{t("application.name.title")}</h2>
+                {!isChatbotOpen && !isChatbotMinimized && (
+                  <AssistantOpenButton
+                    onClick={() => {
+                      setIsChatbotOpen(true)
+                      setIsChatbotMinimized(false)
+                    }}
+                  />
+                )}
+              </div>
+            }
+            progressNavProps={{
+              currentPageSection: currentPageSection,
+              completedSections: application.completedSections,
+              labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+              mounted: OnClientSide(),
+            }}
+            backLink={{
+              url: autofilled
+                ? `/applications/start/autofill`
+                : `/applications/start/what-to-expect`,
+            }}
+            conductor={conductor}
+          >
+            {Object.entries(errors).length > 0 && (
+              <Alert
+                className={styles["message-inside-card"]}
+                variant="alert"
+                fullwidth
+                id={"application-alert-box"}
+              >
+                {t("errors.errorsToResolve")}
+              </Alert>
+            )}
+            <CardSection divider={"inset"}>
+              <div id={"application-initial-page"}>
+                <fieldset>
+                  <legend
+                    className={`text__caps-spaced ${
+                      errors.applicant?.firstName ? "text-alert" : ""
+                    }`}
+                  >
+                    {t("application.name.yourName")}
+                    <LockIcon />
+                  </legend>
 
-                <Field
-                  name="applicant.middleName"
-                  label={t("application.name.middleNameOptional")}
-                  disabled={autofilled}
-                  defaultValue={application.applicant.middleName}
-                  register={register}
-                  dataTestId={"app-primary-middle-name"}
-                  validation={{ maxLength: 64 }}
-                  error={errors.applicant?.middleName}
-                  errorMessage={t("errors.maxLength", { length: 64 })}
-                />
+                  <Field
+                    name="applicant.firstName"
+                    label={t("application.name.firstOrGivenName")}
+                    disabled={autofilled}
+                    defaultValue={application.applicant.firstName}
+                    validation={{ required: true, maxLength: 64 }}
+                    error={errors.applicant?.firstName}
+                    errorMessage={
+                      errors.applicant?.firstName?.type === "maxLength"
+                        ? t("errors.maxLength", { length: 64 })
+                        : t("errors.givenNameError")
+                    }
+                    register={register}
+                    dataTestId={"app-primary-first-name"}
+                  />
 
-                <Field
-                  name="applicant.lastName"
-                  label={t("application.name.lastOrFamilyName")}
-                  disabled={autofilled}
-                  defaultValue={application.applicant.lastName}
-                  validation={{ required: true, maxLength: 64 }}
-                  error={errors.applicant?.lastName}
-                  errorMessage={
-                    errors.applicant?.lastName?.type === "maxLength"
-                      ? t("errors.maxLength", { length: 64 })
-                      : t("errors.familyNameError")
-                  }
-                  register={register}
-                  dataTestId={"app-primary-last-name"}
-                />
-              </fieldset>
-            </div>
-          </CardSection>
-          <CardSection divider={"inset"}>
-            <DOBField
-              defaultDOB={{
-                birthDay: application.applicant.birthDay,
-                birthMonth: application.applicant.birthMonth,
-                birthYear: application.applicant.birthYear,
-              }}
-              disabled={autofilled}
-              register={register}
-              required={true}
-              error={errors.applicant}
-              name="applicant"
-              id="applicant.dateOfBirth"
-              watch={watch}
-              validateAge18={true}
-              errorMessage={t("errors.dateOfBirthErrorAge")}
-              label={
-                <>
-                  {t("application.name.yourDateOfBirth")}
-                  <LockIcon />
-                </>
-              }
-            />
-            <p className={"field-sub-note"}>{t("application.name.dobHelper")}</p>
-          </CardSection>
-          <CardSection divider={"flush"} className={"border-none"}>
-            <legend
-              className={`text__caps-spaced ${errors.applicant?.emailAddress ? "text-alert" : ""}`}
-            >
-              {t("application.name.yourEmailAddress")}
-              <LockIcon />
-            </legend>
+                  <Field
+                    name="applicant.middleName"
+                    label={t("application.name.middleNameOptional")}
+                    disabled={autofilled}
+                    defaultValue={application.applicant.middleName}
+                    register={register}
+                    dataTestId={"app-primary-middle-name"}
+                    validation={{ maxLength: 64 }}
+                    error={errors.applicant?.middleName}
+                    errorMessage={t("errors.maxLength", { length: 64 })}
+                  />
 
-            <p className="field-note mb-4">{t("application.name.emailPrivacy")}</p>
+                  <Field
+                    name="applicant.lastName"
+                    label={t("application.name.lastOrFamilyName")}
+                    disabled={autofilled}
+                    defaultValue={application.applicant.lastName}
+                    validation={{ required: true, maxLength: 64 }}
+                    error={errors.applicant?.lastName}
+                    errorMessage={
+                      errors.applicant?.lastName?.type === "maxLength"
+                        ? t("errors.maxLength", { length: 64 })
+                        : t("errors.familyNameError")
+                    }
+                    register={register}
+                    dataTestId={"app-primary-last-name"}
+                  />
+                </fieldset>
+              </div>
+            </CardSection>
+            <CardSection divider={"inset"}>
+              <DOBField
+                defaultDOB={{
+                  birthDay: application.applicant.birthDay,
+                  birthMonth: application.applicant.birthMonth,
+                  birthYear: application.applicant.birthYear,
+                }}
+                disabled={autofilled}
+                register={register}
+                required={true}
+                error={errors.applicant}
+                name="applicant"
+                id="applicant.dateOfBirth"
+                watch={watch}
+                validateAge18={true}
+                errorMessage={t("errors.dateOfBirthErrorAge")}
+                label={
+                  <>
+                    {t("application.name.yourDateOfBirth")}
+                    <LockIcon />
+                  </>
+                }
+              />
+              <p className={"field-sub-note"}>{t("application.name.dobHelper")}</p>
+            </CardSection>
+            <CardSection divider={"flush"} className={"border-none"}>
+              <legend
+                className={`text__caps-spaced ${
+                  errors.applicant?.emailAddress ? "text-alert" : ""
+                }`}
+              >
+                {t("application.name.yourEmailAddress")}
+                <LockIcon />
+              </legend>
 
-            <Field
-              type="email"
-              name="applicant.emailAddress"
-              label={t("application.name.yourEmailAddress")}
-              readerOnly={true}
-              defaultValue={application.applicant.emailAddress}
-              validation={{ required: !noEmail, pattern: emailRegex }}
-              error={errors.applicant?.emailAddress}
-              errorMessage={t("errors.emailAddressError")}
-              register={register}
-              disabled={clientLoaded && (noEmail || autofilled)}
-              dataTestId={"app-primary-email"}
-              subNote={"example@mail.com"}
-            />
+              <p className="field-note mb-4">{t("application.name.emailPrivacy")}</p>
 
-            <Field
-              type="checkbox"
-              id="noEmail"
-              name="applicant.noEmail"
-              label={t("application.name.noEmailAddress")}
-              primary={true}
-              register={register}
-              disabled={clientLoaded && (emailPresent?.length > 0 || autofilled)}
-              inputProps={{
-                defaultChecked: clientLoaded && noEmail,
-              }}
-              dataTestId={"app-primary-no-email"}
-            />
-          </CardSection>
-        </ApplicationFormLayout>
-      </Form>
-    </FormsLayout>
+              <Field
+                type="email"
+                name="applicant.emailAddress"
+                label={t("application.name.yourEmailAddress")}
+                readerOnly={true}
+                defaultValue={application.applicant.emailAddress}
+                validation={{ required: !noEmail, pattern: emailRegex }}
+                error={errors.applicant?.emailAddress}
+                errorMessage={t("errors.emailAddressError")}
+                register={register}
+                disabled={clientLoaded && (noEmail || autofilled)}
+                dataTestId={"app-primary-email"}
+                subNote={"example@mail.com"}
+              />
+
+              <Field
+                type="checkbox"
+                id="noEmail"
+                name="applicant.noEmail"
+                label={t("application.name.noEmailAddress")}
+                primary={true}
+                register={register}
+                disabled={clientLoaded && (emailPresent?.length > 0 || autofilled)}
+                inputProps={{
+                  defaultChecked: clientLoaded && noEmail,
+                }}
+                dataTestId={"app-primary-no-email"}
+              />
+            </CardSection>
+          </ApplicationFormLayout>
+        </Form>
+      </FormsLayout>
+    </>
   )
 }
 

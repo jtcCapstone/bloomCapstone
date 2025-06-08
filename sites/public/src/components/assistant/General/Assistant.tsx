@@ -1,10 +1,11 @@
 import React from "react"
-import { IncomeAssistantProps } from "../types"
+import { useRouter } from "next/router"
+import { GeneralAssistantProps } from "../types"
 import ChatbotContainer from "../ChatbotContainer"
 import ErrorBoundary from "../ErrorBoundary"
-import { incomeAssistantScript } from "../scripts/incomeScript"
+import { getScriptForPage } from "../scripts/generalScript"
 
-const IncomeAssistant: React.FC<IncomeAssistantProps> = ({
+const Assistant: React.FC<GeneralAssistantProps> = ({
   isOpen,
   onClose,
   onConfirm = (estimate: string) => {
@@ -13,11 +14,14 @@ const IncomeAssistant: React.FC<IncomeAssistantProps> = ({
   },
   _strings,
 }) => {
+  const router = useRouter()
+  const assistantScript = getScriptForPage(router.pathname)
+
   return isOpen ? (
     <ErrorBoundary>
       <div style={{ border: "1px solid #ccc", padding: "1rem" }}>
         <ChatbotContainer
-          assistantScript={incomeAssistantScript}
+          assistantScript={assistantScript}
           onMinimize={onClose}
           onConfirm={onConfirm}
         />
@@ -26,4 +30,4 @@ const IncomeAssistant: React.FC<IncomeAssistantProps> = ({
   ) : null
 }
 
-export default IncomeAssistant
+export default Assistant

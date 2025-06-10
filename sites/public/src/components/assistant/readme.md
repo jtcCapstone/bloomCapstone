@@ -37,7 +37,7 @@ The Smart-Housing Assistant module provides a robust chat interface powered by b
 
 - **types.ts**: Type definitions used throughout the assistant components.
 
-- ****tests**/**: Test suites for all assistant components, ensuring functionality and reliability.
+- \***\*tests**/\*\*: Test suites for all assistant components, ensuring functionality and reliability.
 
 - **project_tracking/**: Documentation and tracking files related to the development and features of the assistant.
 
@@ -58,11 +58,11 @@ This command starts the public-facing application on [http://localhost:3000](htt
 To integrate the Smart-Housing Assistant into your application pages, follow these steps:
 
 1. **Import the Required Components**:
-   In your application page file (e.g., `@income.tsx`), import the `IncomeAssistant` and `AssistantOpenButton` components from the appropriate paths. Here’s an example:
+   In your application page file (e.g., `@income.tsx`), import the `IncomeAssistant` and `AssistantOpenButton` components from the appropriate paths. Here's an example:
 
    ```tsx
    import React, { useState } from "react"
-   import IncomeAssistant from "components/assistant/Income/IncomeAssistant"
+   import Assistant from "components/assistant/General/Assistant"
    import AssistantOpenButton from "components/assistant/AssistantOpenButton"
    ```
 

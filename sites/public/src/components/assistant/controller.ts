@@ -18,7 +18,7 @@ export const sendLLMMessage = async (message: string, history: string[] = []): P
 export const createAssistantController = (script: AssistantScript) => {
   let currentStep = 0
   const responses: string[] = []
-  let pureLlmMode = false
+  let pureLlmMode = !script.questions?.length // Start in LLM mode if no questions
   let invalidInputCount = 0
   let invalidInputs: string[] = []
   let currentQuestions: AssistantQuestion[] = []
@@ -81,21 +81,24 @@ export const createAssistantController = (script: AssistantScript) => {
   const initialize = (): void => {
     currentStep = 0
     responses.splice(0)
-    pureLlmMode = false
+    pureLlmMode = !script.questions?.length // Maintain LLM mode on reinitialize
     invalidInputCount = 0
     invalidInputs = []
     messages = []
     finalEstimate = ""
     confirmReady = false
     validResponses = {}
-    currentQuestions = [...script.questions]
+    currentQuestions = script.questions ? [...script.questions] : []
 
-    messages.push({
-      id: `${Date.now()}`,
-      content: `${script.welcomeMessage}\n${currentQuestions[0]?.question ?? ""}`,
-      sender: "assistant",
-      timestamp: new Date(),
-    })
+    // Only add initial message if not in pure LLM mode
+    if (!pureLlmMode && currentQuestions[0]) {
+      messages.push({
+        id: `${Date.now()}`,
+        content: `${script.welcomeMessage}\n${currentQuestions[0].question}`,
+        sender: "assistant",
+        timestamp: new Date(),
+      })
+    }
   }
 
   const getFinalResult = () =>

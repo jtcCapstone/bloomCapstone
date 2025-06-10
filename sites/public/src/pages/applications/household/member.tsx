@@ -31,6 +31,8 @@ import { AppSubmissionContext } from "../../../lib/applications/AppSubmissionCon
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
 
 export class Member implements HouseholdMemberUpdate {
   constructor(orderId: number) {
@@ -83,6 +85,8 @@ const ApplicationMember = () => {
   const { conductor, application, listing } = useContext(AppSubmissionContext)
   const router = useRouter()
   const currentPageSection = 2
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
 
   if (router.query?.memberId) {
     memberId = parseInt(router.query?.memberId.toString())
@@ -170,360 +174,379 @@ const ApplicationMember = () => {
 
   return (
     <FormsLayout>
-      <Form onSubmit={handleSubmit(onSubmit, onError)}>
-        <ApplicationFormLayout
-          listingName={listing?.name}
-          heading={t("application.household.member.title")}
-          subheading={t("application.household.member.subTitle")}
-          progressNavProps={{
-            currentPageSection: currentPageSection,
-            completedSections: application.completedSections,
-            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-            mounted: OnClientSide(),
-          }}
-        >
-          {Object.entries(errors).length > 0 && (
-            <Alert
-              className={styles["message-inside-card"]}
-              variant="alert"
-              fullwidth
-              id={"application-alert-box"}
-            >
-              {t("errors.errorsToResolve")}
-            </Alert>
-          )}
-
-          <CardSection divider={"inset"}>
-            <fieldset>
-              <legend className="text__caps-spaced">
-                {t("application.household.member.name")}
-              </legend>
-
-              <Field
-                id="firstName"
-                name="firstName"
-                label={t("application.contact.givenName")}
-                defaultValue={member.firstName}
-                validation={{ required: true, maxLength: 64 }}
-                error={errors.firstName}
-                errorMessage={
-                  errors.firstName?.type === "maxLength"
-                    ? t("errors.maxLength", { length: 64 })
-                    : t("errors.givenNameError")
-                }
-                register={register}
-                dataTestId={"app-household-member-first-name"}
-              />
-
-              <Field
-                id="middleName"
-                name="middleName"
-                label={t("application.name.middleNameOptional")}
-                defaultValue={member.middleName}
-                validation={{ maxLength: 64 }}
-                error={errors.middleName}
-                errorMessage={t("errors.maxLength", { length: 64 })}
-                register={register}
-                dataTestId={"app-household-member-middle-name"}
-              />
-
-              <Field
-                id="lastName"
-                name="lastName"
-                label={t("application.contact.familyName")}
-                defaultValue={member.lastName}
-                validation={{ required: true, maxLength: 64 }}
-                error={errors.lastName}
-                errorMessage={
-                  errors.lastName?.type === "maxLength"
-                    ? t("errors.maxLength", { length: 64 })
-                    : t("errors.familyNameError")
-                }
-                register={register}
-                dataTestId={"app-household-member-last-name"}
-              />
-            </fieldset>
-          </CardSection>
-
-          <CardSection divider={"inset"}>
-            <DOBField
-              id="applicant.member.dateOfBirth"
-              required={true}
-              defaultDOB={{
-                birthDay: member.birthDay,
-                birthMonth: member.birthMonth,
-                birthYear: member.birthYear,
-              }}
-              register={register}
-              error={errors}
-              watch={watch}
-              label={t("application.household.member.dateOfBirth")}
-            />
-          </CardSection>
-
-          <CardSection divider={"inset"}>
-            <fieldset>
-              <legend className="text__caps-spaced">
-                {t("application.household.member.haveSameAddress")}
-              </legend>
-              <FieldGroup
-                fieldGroupClassName="grid grid-cols-1"
-                fieldClassName="ml-0"
-                name="sameAddress"
-                type="radio"
-                register={register}
-                validation={{ required: true }}
-                error={errors.sameAddress}
-                errorMessage={t("errors.selectOption")}
-                fields={sameAddressOptions}
-                dataTestId={"app-household-member-same-address"}
-              />
-            </fieldset>
-
-            {(sameAddress == "no" || (!sameAddress && member.sameAddress == "no")) && (
-              <fieldset className="mt-8">
-                <legend className="text__caps-spaced">{t("application.contact.address")}</legend>
-
-                <Field
-                  id="householdMemberAddress.street"
-                  name="householdMemberAddress.street"
-                  defaultValue={member.householdMemberAddress.street}
-                  validation={{ required: true, maxLength: 64 }}
-                  errorMessage={
-                    errors.householdMemberAddress?.street?.type === "maxLength"
-                      ? t("errors.maxLength", { length: 64 })
-                      : t("errors.streetError")
-                  }
-                  error={errors.householdMemberAddress?.street}
-                  register={register}
-                  dataTestId={"app-household-member-address-street"}
-                  label={t("application.contact.streetAddress")}
-                />
-
-                <Field
-                  id="householdMemberAddress.street2"
-                  name="householdMemberAddress.street2"
-                  label={t("application.contact.apt")}
-                  defaultValue={member.householdMemberAddress.street2}
-                  error={errors.householdMemberAddress?.street2}
-                  validation={{ maxLength: 64 }}
-                  errorMessage={t("errors.maxLength", { length: 64 })}
-                  register={register}
-                  dataTestId={"app-household-member-address-street2"}
-                />
-
-                <div className="flex max-w-2xl">
-                  <Field
-                    id="householdMemberAddress.city"
-                    name="householdMemberAddress.city"
-                    label={t("application.contact.city")}
-                    defaultValue={member.householdMemberAddress.city}
-                    validation={{ required: true, maxLength: 64 }}
-                    errorMessage={
-                      errors.householdMemberAddress?.city?.type === "maxLength"
-                        ? t("errors.maxLength", { length: 64 })
-                        : t("errors.cityError")
-                    }
-                    error={errors.householdMemberAddress?.city}
-                    register={register}
-                    dataTestId={"app-household-member-address-city"}
-                  />
-
-                  <Select
-                    id="householdMemberAddress.state"
-                    name="householdMemberAddress.state"
-                    label={t("application.contact.state")}
-                    defaultValue={member.householdMemberAddress.state}
-                    validation={{ required: true, maxLength: 64 }}
-                    error={errors.householdMemberAddress?.state}
-                    errorMessage={
-                      errors.householdMemberAddress?.state?.type === "maxLength"
-                        ? t("errors.maxLength", { length: 64 })
-                        : t("errors.stateError")
-                    }
-                    register={register}
-                    controlClassName="control"
-                    options={stateKeys}
-                    keyPrefix="states"
-                    dataTestId={"app-household-member-address-state"}
-                  />
-                </div>
-
-                <Field
-                  id="householdMemberAddress.zipCode"
-                  name="householdMemberAddress.zipCode"
-                  label={t("application.contact.zip")}
-                  defaultValue={member.householdMemberAddress.zipCode}
-                  validation={{ required: true, maxLength: 10 }}
-                  error={errors.householdMemberAddress?.zipCode}
-                  errorMessage={
-                    errors.address?.householdMemberAddress?.type === "maxLength"
-                      ? t("errors.maxLength", { length: 10 })
-                      : t("errors.zipCodeError")
-                  }
-                  register={register}
-                  dataTestId={"app-household-member-address-zip"}
-                />
-              </fieldset>
-            )}
-          </CardSection>
-
-          <CardSection divider={"inset"}>
-            <fieldset>
-              <legend className="text__caps-spaced">
-                {t("application.household.member.workInRegion", {
-                  county: listing?.listingsBuildingAddress?.county || listing?.jurisdictions?.name,
-                })}
-              </legend>
-              <FieldGroup
-                name="workInRegion"
-                fieldGroupClassName="grid grid-cols-1"
-                fieldClassName="ml-0"
-                groupNote={t("application.household.member.workInRegionNote")}
-                type="radio"
-                register={register}
-                validation={{ required: true }}
-                error={errors.workInRegion}
-                errorMessage={t("errors.selectOption")}
-                fields={workInRegionOptions}
-                dataTestId={"app-household-member-work-in-region"}
-              />
-            </fieldset>
-
-            {(workInRegion == "yes" || (!workInRegion && member.workInRegion == "yes")) && (
-              <fieldset className="mt-8">
-                <legend className="text__caps-spaced">{t("application.contact.address")}</legend>
-
-                <Field
-                  id="householdMemberWorkAddress.street"
-                  name="householdMemberWorkAddress.street"
-                  label={t("application.contact.streetAddress")}
-                  defaultValue={member.householdMemberWorkAddress.street}
-                  validation={{ required: true, maxLength: 64 }}
-                  error={errors.householdMemberWorkAddress?.street}
-                  errorMessage={
-                    errors.householdMemberWorkAddress?.street?.type === "maxLength"
-                      ? t("errors.maxLength", { length: 64 })
-                      : t("errors.streetError")
-                  }
-                  register={register}
-                  dataTestId={"app-household-member-work-address-street"}
-                />
-
-                <Field
-                  id="householdMemberWorkAddress.street2"
-                  name="householdMemberWorkAddress.street2"
-                  label={t("application.contact.apt")}
-                  defaultValue={member.householdMemberWorkAddress.street2}
-                  error={errors.householdMemberWorkAddress?.street2}
-                  errorMessage={t("errors.maxLength", { length: 64 })}
-                  validation={{ maxLength: 64 }}
-                  register={register}
-                  dataTestId={"app-household-member-work-address-street2"}
-                />
-
-                <div className="flex max-w-2xl">
-                  <Field
-                    id="householdMemberWorkAddress.city"
-                    name="householdMemberWorkAddress.city"
-                    label={t("application.contact.city")}
-                    defaultValue={member.householdMemberWorkAddress.city}
-                    validation={{ required: true, maxLength: 64 }}
-                    error={errors.householdMemberWorkAddress?.city}
-                    errorMessage={
-                      errors.householdMemberWorkAddress?.city?.type === "maxLength"
-                        ? t("errors.maxLength", { length: 64 })
-                        : t("errors.cityError")
-                    }
-                    register={register}
-                    dataTestId={"app-household-member-work-address-city"}
-                  />
-
-                  <Select
-                    id="householdMemberWorkAddress.state"
-                    name="householdMemberWorkAddress.state"
-                    label={t("application.contact.state")}
-                    defaultValue={member.householdMemberWorkAddress.state}
-                    validation={{ required: true, maxLength: 64 }}
-                    error={errors.householdMemberWorkAddress?.state}
-                    errorMessage={
-                      errors.householdMemberWorkAddress?.state?.type === "maxLength"
-                        ? t("errors.maxLength", { length: 64 })
-                        : t("errors.stateError")
-                    }
-                    register={register}
-                    controlClassName="control"
-                    options={stateKeys}
-                    keyPrefix="states"
-                    dataTestId={"app-household-member-work-address-state"}
-                  />
-                </div>
-
-                <Field
-                  id="householdMemberWorkAddress.zipCode"
-                  name="householdMemberWorkAddress.zipCode"
-                  label={t("application.contact.zip")}
-                  defaultValue={member.householdMemberWorkAddress.zipCode}
-                  validation={{ required: true, maxLength: 10 }}
-                  error={errors.householdMemberWorkAddress?.zipCode}
-                  errorMessage={
-                    errors.householdMemberWorkAddress?.zipCode?.type === "maxLength"
-                      ? t("errors.maxLength", { length: 10 })
-                      : t("errors.zipCodeError")
-                  }
-                  register={register}
-                  dataTestId={"app-household-member-work-address-zip"}
-                />
-              </fieldset>
-            )}
-          </CardSection>
-
-          <CardSection divider={"inset"} className={"border-none"}>
-            <div className={"field " + (errors.relationship ? "error" : "")}>
-              <label className="text__caps-spaced" htmlFor="relationship">
-                {t("application.household.member.whatIsTheirRelationship")}
-              </label>
-              <div className="control">
-                <select
-                  id="relationship"
-                  name="relationship"
-                  defaultValue={member.relationship}
-                  ref={register({ required: true })}
-                  className="w-full"
-                  data-testid={"app-household-member-relationship"}
-                >
-                  <FormOptions
-                    options={relationshipKeys}
-                    keyPrefix="application.form.options.relationship"
-                  />
-                </select>
+      <>
+        {isChatbotOpen && (
+          <Assistant
+            isOpen={isChatbotOpen}
+            onClose={() => {
+              setIsChatbotOpen(false)
+              setIsChatbotMinimized(false)
+            }}
+          />
+        )}
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+          <ApplicationFormLayout
+            listingName={listing?.name}
+            heading={
+              <div className={styles["heading-with-assistant"]}>
+                <h2>{t("application.household.member.title")}</h2>
+                {!isChatbotOpen && !isChatbotMinimized && (
+                  <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+                )}
               </div>
-              {errors.relationship && (
-                <FormErrorMessage id="relationship-error" className={"pt-2"}>
-                  {t("errors.selectOption")}
-                </FormErrorMessage>
-              )}
-            </div>
-          </CardSection>
+            }
+            subheading={t("application.household.member.subTitle")}
+            progressNavProps={{
+              currentPageSection: currentPageSection,
+              completedSections: application.completedSections,
+              labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+              mounted: OnClientSide(),
+            }}
+          >
+            {Object.entries(errors).length > 0 && (
+              <Alert
+                className={styles["message-inside-card"]}
+                variant="alert"
+                fullwidth
+                id={"application-alert-box"}
+              >
+                {t("errors.errorsToResolve")}
+              </Alert>
+            )}
 
-          <CardSection divider={"flush"} className={"bg-primary-lighter border-none"}>
-            <Button id={"app-household-member-save"} type={"submit"} variant={"primary"}>
-              {saveText}
-            </Button>
-          </CardSection>
-          <CardSection>
-            <Button
-              className="lined text-sm mt-0"
-              type="button"
-              onClick={deleteMember}
-              variant={"text"}
-              id={"app-household-member-cancel"}
-            >
-              {cancelText}
-            </Button>
-          </CardSection>
-        </ApplicationFormLayout>
-      </Form>
+            <CardSection divider={"inset"}>
+              <fieldset>
+                <legend className="text__caps-spaced">
+                  {t("application.household.member.name")}
+                </legend>
+
+                <Field
+                  id="firstName"
+                  name="firstName"
+                  label={t("application.contact.givenName")}
+                  defaultValue={member.firstName}
+                  validation={{ required: true, maxLength: 64 }}
+                  error={errors.firstName}
+                  errorMessage={
+                    errors.firstName?.type === "maxLength"
+                      ? t("errors.maxLength", { length: 64 })
+                      : t("errors.givenNameError")
+                  }
+                  register={register}
+                  dataTestId={"app-household-member-first-name"}
+                />
+
+                <Field
+                  id="middleName"
+                  name="middleName"
+                  label={t("application.name.middleNameOptional")}
+                  defaultValue={member.middleName}
+                  validation={{ maxLength: 64 }}
+                  error={errors.middleName}
+                  errorMessage={t("errors.maxLength", { length: 64 })}
+                  register={register}
+                  dataTestId={"app-household-member-middle-name"}
+                />
+
+                <Field
+                  id="lastName"
+                  name="lastName"
+                  label={t("application.contact.familyName")}
+                  defaultValue={member.lastName}
+                  validation={{ required: true, maxLength: 64 }}
+                  error={errors.lastName}
+                  errorMessage={
+                    errors.lastName?.type === "maxLength"
+                      ? t("errors.maxLength", { length: 64 })
+                      : t("errors.familyNameError")
+                  }
+                  register={register}
+                  dataTestId={"app-household-member-last-name"}
+                />
+              </fieldset>
+            </CardSection>
+
+            <CardSection divider={"inset"}>
+              <DOBField
+                id="applicant.member.dateOfBirth"
+                required={true}
+                defaultDOB={{
+                  birthDay: member.birthDay,
+                  birthMonth: member.birthMonth,
+                  birthYear: member.birthYear,
+                }}
+                register={register}
+                error={errors}
+                watch={watch}
+                label={t("application.household.member.dateOfBirth")}
+              />
+            </CardSection>
+
+            <CardSection divider={"inset"}>
+              <fieldset>
+                <legend className="text__caps-spaced">
+                  {t("application.household.member.haveSameAddress")}
+                </legend>
+                <FieldGroup
+                  fieldGroupClassName="grid grid-cols-1"
+                  fieldClassName="ml-0"
+                  name="sameAddress"
+                  type="radio"
+                  register={register}
+                  validation={{ required: true }}
+                  error={errors.sameAddress}
+                  errorMessage={t("errors.selectOption")}
+                  fields={sameAddressOptions}
+                  dataTestId={"app-household-member-same-address"}
+                />
+              </fieldset>
+
+              {(sameAddress == "no" || (!sameAddress && member.sameAddress == "no")) && (
+                <fieldset className="mt-8">
+                  <legend className="text__caps-spaced">{t("application.contact.address")}</legend>
+
+                  <Field
+                    id="householdMemberAddress.street"
+                    name="householdMemberAddress.street"
+                    defaultValue={member.householdMemberAddress.street}
+                    validation={{ required: true, maxLength: 64 }}
+                    errorMessage={
+                      errors.householdMemberAddress?.street?.type === "maxLength"
+                        ? t("errors.maxLength", { length: 64 })
+                        : t("errors.streetError")
+                    }
+                    error={errors.householdMemberAddress?.street}
+                    register={register}
+                    dataTestId={"app-household-member-address-street"}
+                    label={t("application.contact.streetAddress")}
+                  />
+
+                  <Field
+                    id="householdMemberAddress.street2"
+                    name="householdMemberAddress.street2"
+                    label={t("application.contact.apt")}
+                    defaultValue={member.householdMemberAddress.street2}
+                    error={errors.householdMemberAddress?.street2}
+                    validation={{ maxLength: 64 }}
+                    errorMessage={t("errors.maxLength", { length: 64 })}
+                    register={register}
+                    dataTestId={"app-household-member-address-street2"}
+                  />
+
+                  <div className="flex max-w-2xl">
+                    <Field
+                      id="householdMemberAddress.city"
+                      name="householdMemberAddress.city"
+                      label={t("application.contact.city")}
+                      defaultValue={member.householdMemberAddress.city}
+                      validation={{ required: true, maxLength: 64 }}
+                      errorMessage={
+                        errors.householdMemberAddress?.city?.type === "maxLength"
+                          ? t("errors.maxLength", { length: 64 })
+                          : t("errors.cityError")
+                      }
+                      error={errors.householdMemberAddress?.city}
+                      register={register}
+                      dataTestId={"app-household-member-address-city"}
+                    />
+
+                    <Select
+                      id="householdMemberAddress.state"
+                      name="householdMemberAddress.state"
+                      label={t("application.contact.state")}
+                      defaultValue={member.householdMemberAddress.state}
+                      validation={{ required: true, maxLength: 64 }}
+                      error={errors.householdMemberAddress?.state}
+                      errorMessage={
+                        errors.householdMemberAddress?.state?.type === "maxLength"
+                          ? t("errors.maxLength", { length: 64 })
+                          : t("errors.stateError")
+                      }
+                      register={register}
+                      controlClassName="control"
+                      options={stateKeys}
+                      keyPrefix="states"
+                      dataTestId={"app-household-member-address-state"}
+                    />
+                  </div>
+
+                  <Field
+                    id="householdMemberAddress.zipCode"
+                    name="householdMemberAddress.zipCode"
+                    label={t("application.contact.zip")}
+                    defaultValue={member.householdMemberAddress.zipCode}
+                    validation={{ required: true, maxLength: 10 }}
+                    error={errors.householdMemberAddress?.zipCode}
+                    errorMessage={
+                      errors.address?.householdMemberAddress?.type === "maxLength"
+                        ? t("errors.maxLength", { length: 10 })
+                        : t("errors.zipCodeError")
+                    }
+                    register={register}
+                    dataTestId={"app-household-member-address-zip"}
+                  />
+                </fieldset>
+              )}
+            </CardSection>
+
+            <CardSection divider={"inset"}>
+              <fieldset>
+                <legend className="text__caps-spaced">
+                  {t("application.household.member.workInRegion", {
+                    county:
+                      listing?.listingsBuildingAddress?.county || listing?.jurisdictions?.name,
+                  })}
+                </legend>
+                <FieldGroup
+                  name="workInRegion"
+                  fieldGroupClassName="grid grid-cols-1"
+                  fieldClassName="ml-0"
+                  groupNote={t("application.household.member.workInRegionNote")}
+                  type="radio"
+                  register={register}
+                  validation={{ required: true }}
+                  error={errors.workInRegion}
+                  errorMessage={t("errors.selectOption")}
+                  fields={workInRegionOptions}
+                  dataTestId={"app-household-member-work-in-region"}
+                />
+              </fieldset>
+
+              {(workInRegion == "yes" || (!workInRegion && member.workInRegion == "yes")) && (
+                <fieldset className="mt-8">
+                  <legend className="text__caps-spaced">{t("application.contact.address")}</legend>
+
+                  <Field
+                    id="householdMemberWorkAddress.street"
+                    name="householdMemberWorkAddress.street"
+                    label={t("application.contact.streetAddress")}
+                    defaultValue={member.householdMemberWorkAddress.street}
+                    validation={{ required: true, maxLength: 64 }}
+                    error={errors.householdMemberWorkAddress?.street}
+                    errorMessage={
+                      errors.householdMemberWorkAddress?.street?.type === "maxLength"
+                        ? t("errors.maxLength", { length: 64 })
+                        : t("errors.streetError")
+                    }
+                    register={register}
+                    dataTestId={"app-household-member-work-address-street"}
+                  />
+
+                  <Field
+                    id="householdMemberWorkAddress.street2"
+                    name="householdMemberWorkAddress.street2"
+                    label={t("application.contact.apt")}
+                    defaultValue={member.householdMemberWorkAddress.street2}
+                    error={errors.householdMemberWorkAddress?.street2}
+                    errorMessage={t("errors.maxLength", { length: 64 })}
+                    validation={{ maxLength: 64 }}
+                    register={register}
+                    dataTestId={"app-household-member-work-address-street2"}
+                  />
+
+                  <div className="flex max-w-2xl">
+                    <Field
+                      id="householdMemberWorkAddress.city"
+                      name="householdMemberWorkAddress.city"
+                      label={t("application.contact.city")}
+                      defaultValue={member.householdMemberWorkAddress.city}
+                      validation={{ required: true, maxLength: 64 }}
+                      error={errors.householdMemberWorkAddress?.city}
+                      errorMessage={
+                        errors.householdMemberWorkAddress?.city?.type === "maxLength"
+                          ? t("errors.maxLength", { length: 64 })
+                          : t("errors.cityError")
+                      }
+                      register={register}
+                      dataTestId={"app-household-member-work-address-city"}
+                    />
+
+                    <Select
+                      id="householdMemberWorkAddress.state"
+                      name="householdMemberWorkAddress.state"
+                      label={t("application.contact.state")}
+                      defaultValue={member.householdMemberWorkAddress.state}
+                      validation={{ required: true, maxLength: 64 }}
+                      error={errors.householdMemberWorkAddress?.state}
+                      errorMessage={
+                        errors.householdMemberWorkAddress?.state?.type === "maxLength"
+                          ? t("errors.maxLength", { length: 64 })
+                          : t("errors.stateError")
+                      }
+                      register={register}
+                      controlClassName="control"
+                      options={stateKeys}
+                      keyPrefix="states"
+                      dataTestId={"app-household-member-work-address-state"}
+                    />
+                  </div>
+
+                  <Field
+                    id="householdMemberWorkAddress.zipCode"
+                    name="householdMemberWorkAddress.zipCode"
+                    label={t("application.contact.zip")}
+                    defaultValue={member.householdMemberWorkAddress.zipCode}
+                    validation={{ required: true, maxLength: 10 }}
+                    error={errors.householdMemberWorkAddress?.zipCode}
+                    errorMessage={
+                      errors.householdMemberWorkAddress?.zipCode?.type === "maxLength"
+                        ? t("errors.maxLength", { length: 10 })
+                        : t("errors.zipCodeError")
+                    }
+                    register={register}
+                    dataTestId={"app-household-member-work-address-zip"}
+                  />
+                </fieldset>
+              )}
+            </CardSection>
+
+            <CardSection divider={"inset"} className={"border-none"}>
+              <div className={"field " + (errors.relationship ? "error" : "")}>
+                <label className="text__caps-spaced" htmlFor="relationship">
+                  {t("application.household.member.whatIsTheirRelationship")}
+                </label>
+                <div className="control">
+                  <select
+                    id="relationship"
+                    name="relationship"
+                    defaultValue={member.relationship}
+                    ref={register({ required: true })}
+                    className="w-full"
+                    data-testid={"app-household-member-relationship"}
+                  >
+                    <FormOptions
+                      options={relationshipKeys}
+                      keyPrefix="application.form.options.relationship"
+                    />
+                  </select>
+                </div>
+                {errors.relationship && (
+                  <FormErrorMessage id="relationship-error" className={"pt-2"}>
+                    {t("errors.selectOption")}
+                  </FormErrorMessage>
+                )}
+              </div>
+            </CardSection>
+
+            <CardSection divider={"flush"} className={"bg-primary-lighter border-none"}>
+              <Button id={"app-household-member-save"} type={"submit"} variant={"primary"}>
+                {saveText}
+              </Button>
+            </CardSection>
+            <CardSection>
+              <Button
+                className="lined text-sm mt-0"
+                type="button"
+                onClick={deleteMember}
+                variant={"text"}
+                id={"app-household-member-cancel"}
+              >
+                {cancelText}
+              </Button>
+            </CardSection>
+          </ApplicationFormLayout>
+        </Form>
+      </>
     </FormsLayout>
   )
 }

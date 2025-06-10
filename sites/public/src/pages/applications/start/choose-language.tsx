@@ -27,6 +27,8 @@ import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import { getListingApplicationStatus } from "../../../lib/helpers"
 import styles from "../../../layouts/application-form.module.scss"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
 
 const loadListing = async (
   listingId,
@@ -56,6 +58,8 @@ const ApplicationChooseLanguage = () => {
   const { initialStateLoaded, profile, listingsService } = useContext(AuthContext)
   const toastyRef = useToastyRef()
   const { conductor } = context
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = useState(false)
 
   const listingId = router.query.listingId
 
@@ -120,91 +124,128 @@ const ApplicationChooseLanguage = () => {
   const statusContent = getListingApplicationStatus(listing)
 
   return (
-    <FormsLayout>
-      <ApplicationFormLayout
-        listingName={listing?.name}
-        heading={t("application.chooseLanguage.letsGetStarted")}
-        progressNavProps={{
-          currentPageSection: 1,
-          completedSections: 0,
-          labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-          mounted: OnClientSide(),
-        }}
-        hideBorder={true}
-      >
-        {listing && (
-          <CardSection className={"p-0"}>
-            <ImageCard imageUrl={imageUrl} description={listing.name} />
-            <Message
-              className={styles["message-inside-card"]}
-              customIcon={
-                <Icon size="md" outlined>
-                  {CustomIconMap.clock}
-                </Icon>
-              }
-              fullwidth
-            >
-              {statusContent?.content}
-            </Message>
-          </CardSection>
-        )}
+    <>
+      {isChatbotOpen && (
+        <Assistant
+          isOpen={isChatbotOpen}
+          onClose={() => {
+            setIsChatbotOpen(false)
+            setIsChatbotMinimized(true)
+          }}
+        />
+      )}
 
-        {listing?.applicationConfig.languages.length > 1 && (
-          <CardSection divider={"flush"}>
+      {isChatbotMinimized && (
+        <button
+          type="button"
+          className={styles["assistant-reopen-button"]}
+          onClick={() => {
+            setIsChatbotOpen(true)
+            setIsChatbotMinimized(false)
+          }}
+        >
+          💬 Assistant Help - Click to Reopen
+        </button>
+      )}
+
+      <FormsLayout>
+        <ApplicationFormLayout
+          listingName={listing?.name}
+          heading={
+            <div className={styles["heading-with-assistant"]}>
+              <h2>{t("application.chooseLanguage.letsGetStarted")}</h2>
+              {!isChatbotOpen && !isChatbotMinimized && (
+                <AssistantOpenButton
+                  onClick={() => {
+                    setIsChatbotOpen(true)
+                    setIsChatbotMinimized(false)
+                  }}
+                />
+              )}
+            </div>
+          }
+          progressNavProps={{
+            currentPageSection: 1,
+            completedSections: 0,
+            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+            mounted: OnClientSide(),
+          }}
+          hideBorder={true}
+        >
+          {listing && (
+            <CardSection className={"p-0"}>
+              <ImageCard imageUrl={imageUrl} description={listing.name} />
+              <Message
+                className={styles["message-inside-card"]}
+                customIcon={
+                  <Icon size="md" outlined>
+                    {CustomIconMap.clock}
+                  </Icon>
+                }
+                fullwidth
+              >
+                {statusContent?.content}
+              </Message>
+            </CardSection>
+          )}
+
+          {listing?.applicationConfig.languages.length > 1 && (
+            <CardSection divider={"flush"}>
+              <>
+                <Heading priority={2} size={"lg"} className={"pb-4"}>
+                  {t("application.chooseLanguage.chooseYourLanguage")}
+                </Heading>
+                {listing.applicationConfig.languages.map((lang, index) => (
+                  <Button
+                    variant="primary-outlined"
+                    className="mr-2 mb-2"
+                    onClick={() => {
+                      onLanguageSelect(lang)
+                    }}
+                    key={index}
+                    id={"app-choose-language-button"}
+                  >
+                    {t(`languages.${lang}`)}
+                  </Button>
+                ))}
+              </>
+            </CardSection>
+          )}
+
+          {initialStateLoaded && !profile && (
             <>
-              <Heading priority={2} size={"lg"} className={"pb-4"}>
-                {t("application.chooseLanguage.chooseYourLanguage")}
-              </Heading>
-              {listing.applicationConfig.languages.map((lang, index) => (
+              <CardSection divider={"flush"} className={"bg-primary-lighter"}>
+                <Heading priority={2} size={"2xl"} className={"pb-4"}>
+                  {t("account.haveAnAccount")}
+                </Heading>
+                <p className={"pb-4"}>{t("application.chooseLanguage.signInSaveTime")}</p>
                 <Button
                   variant="primary-outlined"
-                  className="mr-2 mb-2"
-                  onClick={() => {
-                    onLanguageSelect(lang)
-                  }}
-                  key={index}
-                  id={"app-choose-language-button"}
+                  href={`/sign-in?redirectUrl=/applications/start/choose-language&listingId=${listingId?.toString()}`}
+                  id={"app-choose-language-sign-in-button"}
+                  size="sm"
                 >
-                  {t(`languages.${lang}`)}
+                  {t("nav.signIn")}
                 </Button>
-              ))}
+              </CardSection>
+              <CardSection divider={"flush"} className={"bg-primary-lighter"}>
+                <Heading priority={2} size={"2xl"} className={"pb-4"}>
+                  {t("authentication.createAccount.noAccount")}
+                </Heading>
+                <Button
+                  variant="primary-outlined"
+                  href={"/create-account"}
+                  id={"app-choose-language-create-account-button"}
+                  size="sm"
+                >
+                  {t("account.createAccount")}
+                </Button>
+              </CardSection>
             </>
-          </CardSection>
-        )}
-
-        {initialStateLoaded && !profile && (
-          <>
-            <CardSection divider={"flush"} className={"bg-primary-lighter"}>
-              <Heading priority={2} size={"2xl"} className={"pb-4"}>
-                {t("account.haveAnAccount")}
-              </Heading>
-              <p className={"pb-4"}>{t("application.chooseLanguage.signInSaveTime")}</p>
-              <Button
-                variant="primary-outlined"
-                href={`/sign-in?redirectUrl=/applications/start/choose-language&listingId=${listingId?.toString()}`}
-                id={"app-choose-language-sign-in-button"}
-                size="sm"
-              >
-                {t("nav.signIn")}
-              </Button>
-            </CardSection>
-            <CardSection divider={"flush"} className={"bg-primary-lighter"}>
-              <Heading priority={2} size={"2xl"} className={"pb-4"}>
-                {t("authentication.createAccount.noAccount")}
-              </Heading>
-              <Button
-                variant="primary-outlined"
-                href={"/create-account"}
-                id={"app-choose-language-create-account-button"}
-                size="sm"
-              >
-                {t("account.createAccount")}
-              </Button>
-            </CardSection>
-          </>
-        )}
-      </ApplicationFormLayout>
-    </FormsLayout>
+          )}
+        </ApplicationFormLayout>
+      </FormsLayout>
+    </>
   )
 }
 

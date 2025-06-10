@@ -11,6 +11,9 @@ import { HouseholdMemberForm } from "../../../components/applications/HouseholdM
 import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
+import styles from "../../../layouts/application-form.module.scss"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
 
 const ApplicationAddMembers = () => {
   const { profile } = useContext(AuthContext)
@@ -18,6 +21,8 @@ const ApplicationAddMembers = () => {
   const router = useRouter()
   const currentPageSection = 2
   const householdSize = parseInt(application.householdMember.length) + 1
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { errors, handleSubmit, register, clearErrors } = useForm()
@@ -73,58 +78,95 @@ const ApplicationAddMembers = () => {
   }, [profile])
 
   return (
-    <FormsLayout>
-      <Form onSubmit={handleSubmit(onSubmit, onError)}>
-        <ApplicationFormLayout
-          listingName={listing?.name}
-          heading={t("application.household.addMembers.title")}
-          subheading={
-            application.autofilled ? t("application.household.addMembers.doubleCheck") : null
-          }
-          progressNavProps={{
-            currentPageSection: currentPageSection,
-            completedSections: application.completedSections,
-            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-            mounted: OnClientSide(),
+    <>
+      {isChatbotOpen && (
+        <Assistant
+          isOpen={isChatbotOpen}
+          onClose={() => {
+            setIsChatbotOpen(false)
+            setIsChatbotMinimized(true)
           }}
-          backLink={{
-            url: conductor.determinePreviousUrl(),
+        />
+      )}
+
+      {isChatbotMinimized && (
+        <button
+          type="button"
+          className={styles["assistant-reopen-button"]}
+          onClick={() => {
+            setIsChatbotOpen(true)
+            setIsChatbotMinimized(false)
           }}
-          conductor={conductor}
         >
-          <HouseholdSizeField
-            assistanceUrl={t("application.household.assistanceUrl")}
-            clearErrors={clearErrors}
-            error={errors.householdSize}
-            householdSize={householdSize}
-            householdSizeMax={listing?.householdSizeMax}
-            householdSizeMin={listing?.householdSizeMin}
-            register={register}
-            validate={true}
-          />
-          <CardSection divider="inset">
-            <HouseholdMemberForm
-              editMember={editMember}
-              editMode={!application.autofilled}
-              memberFirstName={applicant.firstName}
-              memberLastName={applicant.lastName}
-              subtitle={t("application.household.primaryApplicant")}
+          💬 Assistant Help - Click to Reopen
+        </button>
+      )}
+
+      <FormsLayout>
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+          <ApplicationFormLayout
+            listingName={listing?.name}
+            heading={
+              <div className={styles["heading-with-assistant"]}>
+                <h2>{t("application.household.addMembers.title")}</h2>
+                {!isChatbotOpen && !isChatbotMinimized && (
+                  <AssistantOpenButton
+                    onClick={() => {
+                      setIsChatbotOpen(true)
+                      setIsChatbotMinimized(false)
+                    }}
+                  />
+                )}
+              </div>
+            }
+            subheading={
+              application.autofilled ? t("application.household.addMembers.doubleCheck") : null
+            }
+            progressNavProps={{
+              currentPageSection: currentPageSection,
+              completedSections: application.completedSections,
+              labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+              mounted: OnClientSide(),
+            }}
+            backLink={{
+              url: conductor.determinePreviousUrl(),
+            }}
+            conductor={conductor}
+          >
+            <HouseholdSizeField
+              assistanceUrl={t("application.household.assistanceUrl")}
+              clearErrors={clearErrors}
+              error={errors.householdSize}
+              householdSize={householdSize}
+              householdSizeMax={listing?.householdSizeMax}
+              householdSizeMin={listing?.householdSizeMin}
+              register={register}
+              validate={true}
             />
-          </CardSection>
-          {membersSection}
-          <CardSection divider={"flush"} className={"border-none"}>
-            <Button
-              onClick={onAddMember}
-              variant="primary-outlined"
-              id={"app-add-household-member-button"}
-              type={"button"}
-            >
-              {t("application.household.addMembers.addHouseholdMember")}
-            </Button>
-          </CardSection>
-        </ApplicationFormLayout>
-      </Form>
-    </FormsLayout>
+            <CardSection divider="inset">
+              <HouseholdMemberForm
+                editMember={editMember}
+                editMode={!application.autofilled}
+                memberFirstName={applicant.firstName}
+                memberLastName={applicant.lastName}
+                subtitle={t("application.household.primaryApplicant")}
+              />
+            </CardSection>
+            {membersSection}
+            <CardSection divider={"flush"} className={"border-none"}>
+              <Button
+                onClick={onAddMember}
+                variant="primary-outlined"
+                id={"app-add-household-member-button"}
+                type={"button"}
+              >
+                {t("application.household.addMembers.addHouseholdMember")}
+              </Button>
+            </CardSection>
+          </ApplicationFormLayout>
+        </Form>
+      </FormsLayout>
+    </>
   )
 }
 

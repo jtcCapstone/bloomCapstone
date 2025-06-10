@@ -1,3 +1,8 @@
+// Component Exports
+export { default as Assistant } from "./General/Assistant"
+export { default as AssistantOpenButton } from "./AssistantOpenButton"
+
+// Type Definitions
 export interface ChatMessage {
   id: string
   content: string
@@ -14,6 +19,11 @@ export interface AssistantQuestion {
   dynamicQuestionHandler?: (input: string, responses: string[]) => AssistantQuestion[]
 }
 
+export interface PageContextData {
+  directLlmWelcomeMessage: string
+  systemPromptHint?: string
+}
+
 export interface AssistantScript {
   welcomeMessage: string
   questions: AssistantQuestion[]
@@ -24,6 +34,8 @@ export interface AssistantScript {
     requiresConfirmation: boolean
     finalMessage: string
   } | null
+  pageDataMap?: Record<string, PageContextData>
+  directLlmWelcomeMessage?: string
 }
 
 export interface ErrorBoundaryProps {
@@ -53,6 +65,14 @@ export interface ChatbotPanelProps {
   pureLLMMode?: boolean
 }
 
+export interface GeneralAssistantProps {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm?: (estimate: string) => void
+  _strings?: { title?: string }
+}
+
+// Legacy type - consider deprecating in favor of GeneralAssistantProps
 export interface IncomeAssistantProps {
   isOpen: boolean
   onClose: () => void

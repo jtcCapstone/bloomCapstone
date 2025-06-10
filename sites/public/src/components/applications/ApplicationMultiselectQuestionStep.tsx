@@ -32,7 +32,7 @@ export interface ApplicationMultiselectQuestionStepProps {
   applicationStep: string
   applicationSectionNumber: number
   strings?: {
-    title?: string
+    title?: React.ReactNode
     subTitle?: string
   }
 }

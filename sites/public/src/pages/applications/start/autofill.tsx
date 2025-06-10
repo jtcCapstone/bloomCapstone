@@ -18,6 +18,9 @@ import { Application } from "@bloom-housing/shared-helpers/src/types/backend-swa
 import ApplicationFormLayout from "../../../layouts/application-form"
 import { Button } from "@bloom-housing/ui-seeds"
 import { CardSection } from "@bloom-housing/ui-seeds/src/blocks/Card"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
+import styles from "../../../layouts/application-form.module.scss"
 
 export default () => {
   const router = useRouter()
@@ -26,6 +29,8 @@ export default () => {
   const { initialStateLoaded, profile, applicationsService } = useContext(AuthContext)
   const [submitted, setSubmitted] = useState(false)
   const [previousApplication, setPreviousApplication] = useState<Application>(null)
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = useState(false)
 
   const currentPageSection = 1
   let useDetails = false
@@ -86,61 +91,98 @@ export default () => {
   }, [profile, applicationsService, onSubmit, previousApplication, initialStateLoaded])
 
   return previousApplication ? (
-    <FormsLayout>
-      <ApplicationFormLayout
-        listingName={listing?.name}
-        heading={t("application.autofill.saveTime")}
-        subheading={t("application.autofill.prefillYourApplication")}
-        progressNavProps={{
-          currentPageSection: currentPageSection,
-          completedSections: application.completedSections,
-          labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-          mounted: mounted,
-        }}
-        backLink={{
-          url: `/applications/start/what-to-expect`,
-        }}
-        hideBorder={true}
-      >
-        <FormSummaryDetails
-          application={previousApplication}
-          listing={listing}
-          editMode={false}
-          hidePreferences={true}
-          hidePrograms={true}
+    <>
+      {isChatbotOpen && (
+        <Assistant
+          isOpen={isChatbotOpen}
+          onClose={() => {
+            setIsChatbotOpen(false)
+            setIsChatbotMinimized(true)
+          }}
         />
-        <Form onSubmit={handleSubmit(onSubmit)}>
-          <CardSection
-            id={"application-initial-page"}
-            className={"bg-primary-lighter border-none"}
-            divider={"flush"}
-          >
-            <Button
-              variant={"primary"}
-              onClick={() => {
-                useDetails = true
-              }}
-              id={"autofill-accept"}
-              type={"submit"}
+      )}
+
+      {isChatbotMinimized && (
+        <button
+          type="button"
+          className={styles["assistant-reopen-button"]}
+          onClick={() => {
+            setIsChatbotOpen(true)
+            setIsChatbotMinimized(false)
+          }}
+        >
+          💬 Assistant Help - Click to Reopen
+        </button>
+      )}
+
+      <FormsLayout>
+        <ApplicationFormLayout
+          listingName={listing?.name}
+          heading={
+            <div className={styles["heading-with-assistant"]}>
+              <h2>{t("application.autofill.saveTime")}</h2>
+              {!isChatbotOpen && !isChatbotMinimized && (
+                <AssistantOpenButton
+                  onClick={() => {
+                    setIsChatbotOpen(true)
+                    setIsChatbotMinimized(false)
+                  }}
+                />
+              )}
+            </div>
+          }
+          subheading={t("application.autofill.prefillYourApplication")}
+          progressNavProps={{
+            currentPageSection: currentPageSection,
+            completedSections: application.completedSections,
+            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+            mounted: mounted,
+          }}
+          backLink={{
+            url: `/applications/start/what-to-expect`,
+          }}
+          hideBorder={true}
+        >
+          <FormSummaryDetails
+            application={previousApplication}
+            listing={listing}
+            editMode={false}
+            hidePreferences={true}
+            hidePrograms={true}
+          />
+          <Form onSubmit={handleSubmit(onSubmit)}>
+            <CardSection
+              id={"application-initial-page"}
+              className={"bg-primary-lighter border-none"}
+              divider={"flush"}
             >
-              {t("application.autofill.start")}
-            </Button>
-          </CardSection>
-          <CardSection>
-            <Button
-              variant={"text"}
-              onClick={() => {
-                useDetails = false
-              }}
-              type={"submit"}
-              id={"autofill-decline"}
-            >
-              {t("application.autofill.reset")}
-            </Button>
-          </CardSection>
-        </Form>
-      </ApplicationFormLayout>
-    </FormsLayout>
+              <Button
+                variant={"primary"}
+                onClick={() => {
+                  useDetails = true
+                }}
+                id={"autofill-accept"}
+                type={"submit"}
+              >
+                {t("application.autofill.start")}
+              </Button>
+            </CardSection>
+            <CardSection>
+              <Button
+                variant={"text"}
+                onClick={() => {
+                  useDetails = false
+                }}
+                type={"submit"}
+                id={"autofill-decline"}
+              >
+                {t("application.autofill.reset")}
+              </Button>
+            </CardSection>
+          </Form>
+        </ApplicationFormLayout>
+      </FormsLayout>
+    </>
   ) : (
     <FormsLayout></FormsLayout>
   )

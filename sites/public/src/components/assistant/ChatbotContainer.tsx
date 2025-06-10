@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react"
+import { useRouter } from "next/router"
 import { AssistantScript, ChatMessage } from "./types"
 import ChatbotPanel from "./ChatbotPanel"
 import { createAssistantController } from "./controller"
@@ -25,6 +26,7 @@ const ChatbotContainer = forwardRef(
     const [confirmReady, setConfirmReady] = useState(false)
     const [hasConfirmed, setHasConfirmed] = useState(false)
     const [isInitialized, setIsInitialized] = useState(false)
+    const router = useRouter()
 
     const controllerRef = useRef<ReturnType<typeof createAssistantController> | null>(null)
 
@@ -33,14 +35,40 @@ const ChatbotContainer = forwardRef(
         controllerRef.current = createAssistantController(assistantScript)
         const initChat = () => {
           if (controllerRef.current) {
+            // Start in pure LLM mode if there are no questions in the script
+            const shouldStartInLLMMode = !assistantScript.questions?.length
+            setPureLLMMode(shouldStartInLLMMode)
+
             controllerRef.current.initialize()
-            setMessages(controllerRef.current.getMessages())
+
+            // If starting in LLM mode, use the page-specific welcome message
+            if (shouldStartInLLMMode) {
+              const pageData =
+                assistantScript.pageDataMap?.[router.pathname] ||
+                assistantScript.pageDataMap?.["default"]
+              const welcomeMessage =
+                pageData?.directLlmWelcomeMessage ||
+                assistantScript.directLlmWelcomeMessage ||
+                assistantScript.welcomeMessage
+
+              setMessages([
+                {
+                  id: `llm-welcome-${Date.now()}`,
+                  content: welcomeMessage,
+                  sender: "assistant",
+                  timestamp: new Date(),
+                },
+              ])
+            } else {
+              setMessages(controllerRef.current.getMessages())
+            }
+
             setIsInitialized(true)
           }
         }
         void initChat()
       }
-    }, [assistantScript, isInitialized])
+    }, [assistantScript, isInitialized, router.pathname])
 
     const handleSendMessage = useCallback(
       async (input: string) => {
@@ -99,7 +127,7 @@ const ChatbotContainer = forwardRef(
               }
             }
           }
-        } catch {
+        } catch (error) {
           setMessages((prev) => [
             ...prev,
             {
@@ -141,18 +169,26 @@ const ChatbotContainer = forwardRef(
       } else if (confirmReady && hasConfirmed) {
         setPureLLMMode(true)
         setConfirmReady(false)
+
+        // Use page-specific welcome message when switching to LLM mode
+        const pageData =
+          assistantScript.pageDataMap?.[router.pathname] || assistantScript.pageDataMap?.["default"]
+        const welcomeMessage =
+          pageData?.directLlmWelcomeMessage ||
+          assistantScript.directLlmWelcomeMessage ||
+          "I'm now in AI Assistant mode. Feel free to ask me any questions!"
+
         setMessages((prev) => [
           ...prev,
           {
             id: `llm-welcome-${Date.now()}`,
-            content:
-              "I'm now in AI Assistant mode. Feel free to ask me any questions about income calculations or related topics!",
+            content: welcomeMessage,
             sender: "assistant",
             timestamp: new Date(),
           },
         ])
       }
-    }, [confirmReady, hasConfirmed, onConfirm])
+    }, [confirmReady, hasConfirmed, onConfirm, assistantScript, router.pathname])
 
     useImperativeHandle(ref, () => ({
       sendMessage: handleSendMessage,

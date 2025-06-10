@@ -15,11 +15,15 @@ import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
 import styles from "../../../layouts/application-form.module.scss"
+import { AssistantOpenButton } from "../../../components/assistant/types"
+import Assistant from "../../../components/assistant/General/Assistant"
 
 const ApplicationAlternateContactType = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("alternateContactType")
   const currentPageSection = 1
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
 
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { register, handleSubmit, errors, watch, trigger } = useForm<Record<string, any>>({
@@ -51,94 +55,133 @@ const ApplicationAlternateContactType = () => {
   }, [profile])
 
   return (
-    <FormsLayout>
-      <Form id="applications-contact-alternate-type" onSubmit={handleSubmit(onSubmit, onError)}>
-        <ApplicationFormLayout
-          listingName={listing?.name}
-          heading={t("application.alternateContact.type.title")}
-          subheading={t("application.alternateContact.type.description")}
-          progressNavProps={{
-            currentPageSection: currentPageSection,
-            completedSections: application.completedSections,
-            labels: conductor.config.sections.map((label) => t(`t.${label}`)),
-            mounted: OnClientSide(),
+    <>
+      {isChatbotOpen && (
+        <Assistant
+          isOpen={isChatbotOpen}
+          onClose={() => {
+            setIsChatbotOpen(false)
+            setIsChatbotMinimized(true)
           }}
-          backLink={{
-            url: conductor.determinePreviousUrl(),
-          }}
-          conductor={conductor}
-        >
-          {Object.entries(errors).length > 0 && (
-            <Alert
-              className={styles["message-inside-card"]}
-              variant="alert"
-              fullwidth
-              id={"application-alert-box"}
-            >
-              {t("errors.errorsToResolve")}
-            </Alert>
-          )}
-          <CardSection divider={"flush"} className={"border-none"}>
-            <fieldset>
-              <legend className={`text__caps-spaced ${errors?.type ? "text-alert" : ""}`}>
-                {t("application.alternateContact.type.label")}
-              </legend>
-              <p className="field-note mb-4">{t("t.pleaseSelectOne")}</p>
-              {altContactRelationshipKeys.map((option, i) => {
-                return (
-                  <Fragment key={option}>
-                    <Field
-                      className="mb-1"
-                      key={option}
-                      type="radio"
-                      id={"type-" + option}
-                      name="type"
-                      label={t("application.alternateContact.type.options." + option)}
-                      register={register}
-                      validation={{ required: true }}
-                      error={errors.type}
-                      inputProps={{
-                        value: option,
-                        defaultChecked: application.alternateContact.type === option,
-                      }}
-                      dataTestId={"app-alternate-type"}
-                    />
+        />
+      )}
 
-                    {option === "other" && type === "other" && (
+      {isChatbotMinimized && (
+        <button
+          type="button"
+          className={styles["assistant-reopen-button"]}
+          onClick={() => {
+            setIsChatbotOpen(true)
+            setIsChatbotMinimized(false)
+          }}
+        >
+          💬 Assistant Help - Click to Reopen
+        </button>
+      )}
+
+      <FormsLayout>
+        <Form id="applications-contact-alternate-type" onSubmit={handleSubmit(onSubmit, onError)}>
+          <ApplicationFormLayout
+            listingName={listing?.name}
+            heading={
+              <div className={styles["heading-with-assistant"]}>
+                <h2>{t("application.alternateContact.type.title")}</h2>
+                {!isChatbotOpen && !isChatbotMinimized && (
+                  <AssistantOpenButton
+                    onClick={() => {
+                      setIsChatbotOpen(true)
+                      setIsChatbotMinimized(false)
+                    }}
+                  />
+                )}
+              </div>
+            }
+            subheading={t("application.alternateContact.type.description")}
+            progressNavProps={{
+              currentPageSection: currentPageSection,
+              completedSections: application.completedSections,
+              labels: conductor.config.sections.map((label) => t(`t.${label}`)),
+              mounted: OnClientSide(),
+            }}
+            backLink={{
+              url: conductor.determinePreviousUrl(),
+            }}
+            conductor={conductor}
+          >
+            {Object.entries(errors).length > 0 && (
+              <Alert
+                className={styles["message-inside-card"]}
+                variant="alert"
+                fullwidth
+                id={"application-alert-box"}
+              >
+                {t("errors.errorsToResolve")}
+              </Alert>
+            )}
+            <CardSection divider={"flush"} className={"border-none"}>
+              <fieldset>
+                <legend className={`text__caps-spaced ${errors?.type ? "text-alert" : ""}`}>
+                  {t("application.alternateContact.type.label")}
+                </legend>
+                <p className="field-note mb-4">{t("t.pleaseSelectOne")}</p>
+                {altContactRelationshipKeys.map((option, i) => {
+                  return (
+                    <Fragment key={option}>
                       <Field
-                        controlClassName="mt-4"
-                        id="otherType"
-                        name="otherType"
-                        label={t("application.alternateContact.type.otherTypeFormPlaceholder")}
-                        defaultValue={application.alternateContact.otherType}
-                        validation={{ required: true, maxLength: 64 }}
-                        error={errors.otherType}
-                        errorMessage={
-                          errors.otherType?.type === "maxLength"
-                            ? t("errors.maxLength", { length: 64 })
-                            : t("application.alternateContact.type.otherTypeValidationErrorMessage")
-                        }
+                        className="mb-1"
+                        key={option}
+                        type="radio"
+                        id={"type-" + option}
+                        name="type"
+                        label={t("application.alternateContact.type.options." + option)}
                         register={register}
-                        dataTestId={"app-alternate-other-type"}
+                        validation={{ required: true }}
+                        error={errors.type}
+                        inputProps={{
+                          value: option,
+                          defaultChecked: application.alternateContact.type === option,
+                        }}
+                        dataTestId={"app-alternate-type"}
                       />
-                    )}
-                    {i === altContactRelationshipKeys.length - 1 && (
-                      <>
-                        {errors.type && (
-                          <FormErrorMessage id="type-error">
-                            {t("application.alternateContact.type.validationErrorMessage")}
-                          </FormErrorMessage>
-                        )}
-                      </>
-                    )}
-                  </Fragment>
-                )
-              })}
-            </fieldset>
-          </CardSection>
-        </ApplicationFormLayout>
-      </Form>
-    </FormsLayout>
+
+                      {option === "other" && type === "other" && (
+                        <Field
+                          controlClassName="mt-4"
+                          id="otherType"
+                          name="otherType"
+                          label={t("application.alternateContact.type.otherTypeFormPlaceholder")}
+                          defaultValue={application.alternateContact.otherType}
+                          validation={{ required: true, maxLength: 64 }}
+                          error={errors.otherType}
+                          errorMessage={
+                            errors.otherType?.type === "maxLength"
+                              ? t("errors.maxLength", { length: 64 })
+                              : t(
+                                  "application.alternateContact.type.otherTypeValidationErrorMessage"
+                                )
+                          }
+                          register={register}
+                          dataTestId={"app-alternate-other-type"}
+                        />
+                      )}
+                      {i === altContactRelationshipKeys.length - 1 && (
+                        <>
+                          {errors.type && (
+                            <FormErrorMessage id="type-error">
+                              {t("application.alternateContact.type.validationErrorMessage")}
+                            </FormErrorMessage>
+                          )}
+                        </>
+                      )}
+                    </Fragment>
+                  )
+                })}
+              </fieldset>
+            </CardSection>
+          </ApplicationFormLayout>
+        </Form>
+      </FormsLayout>
+    </>
   )
 }
 

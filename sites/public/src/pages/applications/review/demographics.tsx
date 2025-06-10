@@ -21,10 +21,14 @@ import FormsLayout from "../../../layouts/forms"
 import { useFormConductor } from "../../../lib/hooks"
 import { UserStatus } from "../../../lib/constants"
 import ApplicationFormLayout from "../../../layouts/application-form"
+import Assistant from "../../../components/assistant/General/Assistant"
+import AssistantOpenButton from "../../../components/assistant/AssistantOpenButton"
 
 const ApplicationDemographics = () => {
   const { profile } = useContext(AuthContext)
   const { conductor, application, listing } = useFormConductor("demographics")
+  const [isChatbotOpen, setIsChatbotOpen] = React.useState(false)
+  const [isChatbotMinimized, setIsChatbotMinimized] = React.useState(false)
   let currentPageSection = 4
   if (listingSectionQuestions(listing, MultiselectQuestionsApplicationSectionEnum.programs)?.length)
     currentPageSection += 1
@@ -97,7 +101,14 @@ const ApplicationDemographics = () => {
       <Form onSubmit={handleSubmit(onSubmit)}>
         <ApplicationFormLayout
           listingName={listing?.name}
-          heading={t("application.review.demographics.title")}
+          heading={
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <span>{t("application.review.demographics.title")}</span>
+              {!isChatbotOpen && !isChatbotMinimized && (
+                <AssistantOpenButton onClick={() => setIsChatbotOpen(true)} />
+              )}
+            </div>
+          }
           subheading={t("application.review.demographics.subTitle")}
           progressNavProps={{
             currentPageSection: currentPageSection,
@@ -156,6 +167,16 @@ const ApplicationDemographics = () => {
               />
             </fieldset>
           </CardSection>
+
+          {isChatbotOpen && (
+            <Assistant
+              isOpen={isChatbotOpen}
+              onClose={() => {
+                setIsChatbotOpen(false)
+                setIsChatbotMinimized(false)
+              }}
+            />
+          )}
         </ApplicationFormLayout>
       </Form>
     </FormsLayout>

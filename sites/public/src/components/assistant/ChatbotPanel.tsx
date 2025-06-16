@@ -19,6 +19,7 @@ const ChatbotPanel: React.FC<ChatbotPanelProps> = ({
   pureLLMMode,
 }) => {
   const [inputValue, setInputValue] = useState("")
+  const [showDisclaimer, setShowDisclaimer] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
@@ -46,8 +47,7 @@ const ChatbotPanel: React.FC<ChatbotPanelProps> = ({
     pureLLMMode ||
     (currentStep < totalSteps &&
       (!customButtonText ||
-        (customButtonText !== "Confirm Estimate" &&
-          customButtonText !== "Switch to Pure LLM Mode")))
+        (customButtonText !== "Confirm Estimate" && customButtonText !== "Still have Questions?")))
 
   return (
     <div className={styles.chatbotContainer}>
@@ -82,7 +82,7 @@ const ChatbotPanel: React.FC<ChatbotPanelProps> = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             className={styles.textInput}
-            placeholder="Type your answer..."
+            placeholder="Ask a question..."
             disabled={isProcessing}
           />
           <button
@@ -95,10 +95,48 @@ const ChatbotPanel: React.FC<ChatbotPanelProps> = ({
         </form>
       )}
 
+      <div className={styles.disclaimerNotice}>
+        By chatting, you agree to this{" "}
+        <button onClick={() => setShowDisclaimer(true)} className={styles.disclaimerLink}>
+          disclaimer
+        </button>
+        .
+      </div>
+
+      {showDisclaimer && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <span>Disclaimer</span>
+              <button className={styles.closeButton} onClick={() => setShowDisclaimer(false)}>
+                &times;
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p>
+                By chatting, you agree to our{" "}
+                <button className={styles.linkButton}>Terms of Use</button>,{" "}
+                <button className={styles.linkButton}>Privacy Policy</button>, and{" "}
+                <button className={styles.linkButton}>Responsible Use Policy</button>.
+                <br />
+                <br />
+                This assistant may generate incorrect or incomplete information. Any guidance is
+                informational and does not determine eligibility.
+              </p>
+            </div>
+            <div className={styles.modalFooter}>
+              <button onClick={() => setShowDisclaimer(false)} className={styles.confirmButton}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showSwitchLLMButton && onSwitchLLMMode && (
         <div className={styles.switchLLMContainer}>
           <button onClick={onSwitchLLMMode} className={styles.switchLLMButton}>
-            Switch to Pure LLM Mode
+            Still have Questions?
           </button>
         </div>
       )}

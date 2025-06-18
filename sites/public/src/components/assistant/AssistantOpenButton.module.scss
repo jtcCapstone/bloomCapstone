@@ -1,16 +1,64 @@
+// .openButton {
+//   margin-left: var(--seeds-s2);
+//   padding: var(--seeds-s2);
+//   background-color: var(--seeds-color-primary);
+//   color: var(--seeds-color-white);
+//   border: none;
+//   border-radius: var(--seeds-rounded-md);
+//   font-size: var(--seeds-font-size-base);
+//   font-weight: var(--seeds-font-weight-semibold);
+//   cursor: pointer;
+//   transition: background-color 0.3s ease;
+// }
+
+// .openButton:hover {
+//   background-color: var(--seeds-color-primary-dark);
+// }
+
+
 .openButton {
-  margin-left: var(--seeds-s2);
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
   padding: var(--seeds-s2);
-  background-color: var(--seeds-color-primary);
+  background-color: var(--seeds-color-white);
   color: var(--seeds-color-white);
   border: none;
-  border-radius: var(--seeds-rounded-md);
-  font-size: var(--seeds-font-size-base);
-  font-weight: var(--seeds-font-weight-semibold);
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  z-index: 9999;
 }
 
 .openButton:hover {
-  background-color: var(--seeds-color-primary-dark);
+  background-color: var(--seeds-color-white);
+  transform: scale(1.05);
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }

@@ -150,6 +150,113 @@
   font-size: var(--seeds-font-size-xl);
 }
 
+.disclaimerNotice {
+  font-size: 0.75rem;
+  text-align: center;
+  margin-top: 6px;
+  color: var(--seeds-color-gray-700);
+}
+
+.disclaimerLink {
+  background: none;
+  border: none;
+  color: var(--seeds-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.75rem;
+
+  &:hover {
+    color: var(--seeds-color-primary-dark);
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1rem;
+  border-bottom: 1px solid var(--seeds-color-gray-300);
+  padding-bottom: 8px;
+}
+
+.modalBody {
+  font-size: 0.875rem;
+  margin-top: 12px;
+
+  a {
+    color: var(--seeds-color-primary);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--seeds-color-primary-dark);
+    }
+  }
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.confirmButton {
+  background-color: var(--seeds-color-primary);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--seeds-rounded-sm);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--seeds-color-primary-dark);
+  }
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  border-radius: var(--seeds-rounded-md);
+  color: var(--seeds-color-gray-700);
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--seeds-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--seeds-color-primary-dark);
+  }
+}
+
+
 /* Custom styles for confirm and switch-to-LLM mode buttons */
 .customButtonContainer {
   margin: 1rem 0;

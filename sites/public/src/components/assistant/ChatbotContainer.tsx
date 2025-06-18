@@ -198,7 +198,7 @@ const ChatbotContainer = forwardRef(
     const customButtonText =
       confirmReady && !pureLLMMode
         ? hasConfirmed
-          ? "Switch to Pure LLM Mode"
+          ? "Still have Questions?"
           : "Confirm Estimate"
         : undefined
 
